@@ -1,0 +1,10 @@
+{
+  "linked_after": 236,
+  "linked_before": 178,
+  "linked_share_after": 0.57,
+  "binomial_p_vs_half": 0.005027219544994751,
+  "baseline_after": 19007,
+  "baseline_before": 18166,
+  "baseline_share_after": 0.5113,
+  "fisher_p_linked_vs_baseline": 0.017655529223799937
+}
