@@ -1,0 +1,6 @@
+raw/
+template/
+.venv/
+__pycache__/
+*.pyc
+out/cache/
