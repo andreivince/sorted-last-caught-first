@@ -2,9 +2,6 @@
 
 Usage: uv run python -m breadcrumbs.confounds  -> out/confounds.json
 """
-"""Read-only review checks of the Q3 breadcrumb effect. Run from the repo root:
-cd /Users/andreivince/Developer/apart-deleted-last && uv run python <this file>
-Writes nothing into the repo; pickles candidate rows into the scratch dir."""
 import json
 from pathlib import Path
 from collections import defaultdict, Counter

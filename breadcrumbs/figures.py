@@ -378,8 +378,8 @@ def figure1(res: dict) -> None:  # noqa: F811
     created = np.array([daily[d]["created"] for d in days])
     deleted = np.array([daily[d]["deleted"] for d in days])
     fig, (a, b) = plt.subplots(2, 1, figsize=(6.9, 5.0), sharex=True, gridspec_kw={"height_ratios": [1.2, 1], "hspace": 0.34})
-    a.bar(x, created, width=0.72, color=ORANGE, linewidth=0)
-    a.bar(x, -deleted, width=0.72, color=BLUE, linewidth=0)
+    a.bar(x + timedelta(hours=2.4), created, width=0.8, align="edge", color=ORANGE, linewidth=0)
+    a.bar(x + timedelta(hours=2.4), -deleted, width=0.8, align="edge", color=BLUE, linewidth=0)
     a.axhline(0, color=INK2, lw=0.6)
     a.set_ylim(-780, 1450)
     a.set_yticks([-500, 0, 500, 1000])
@@ -389,8 +389,8 @@ def figure1(res: dict) -> None:  # noqa: F811
     a.set_title("A   Pages created by agents (up) and deleted by the moderator (down), per day", pad=12)
     i18 = days.index("2026-06-18")
     a.text(x[0] - timedelta(hours=10), 1240, f"Jun 18: {created[i18]:,} created,\n{deleted[i18]} deleted", fontsize=7.5, color=INK2, va="bottom")
-    a.axvspan(datetime(2026, 6, 22, 12), datetime(2026, 7, 16, 12), color="#f4f3f0", zorder=0, linewidth=0)
-    a.text(datetime(2026, 6, 23, 6), 1330, "Cleanup: no new agent pages after Jun 22", fontsize=7.5, color=INK2, va="top")
+    a.axvspan(datetime(2026, 6, 23, 0), datetime(2026, 7, 16, 12), color="#f4f3f0", zorder=0, linewidth=0)
+    a.text(datetime(2026, 6, 23, 6), 1330, "Cleanup: only 4 new agent pages after Jun 22", fontsize=7.5, color=INK2, va="top")
     notice = datetime(2026, 6, 19, 14, 5)
     a.axvline(notice, ymax=0.8, color=INK, lw=0.7, ls=(0, (2, 2)))
     b.axvline(notice, color=INK, lw=0.7, ls=(0, (2, 2)))
@@ -404,7 +404,7 @@ def figure1(res: dict) -> None:  # noqa: F811
     nr = np.array([r["n"] for r in rec])
     ns = np.array([r["n"] for r in s])
     b.axhline(0.5, color=MUTED, lw=0.8, ls=(0, (1, 2)))
-    b.scatter(xs, ys, s=6 + ns / 6, color=BLUE, alpha=0.75, linewidth=0, label="A-Z title order")
+    b.scatter(xs, ys, s=6 + ns / 6, color=BLUE, alpha=0.75, linewidth=0, label="A to Z title order")
     b.scatter(xr, yr, s=6 + nr / 6, color=VIOLET, alpha=0.75, linewidth=0, marker="D", label="newest-edited page first")
     b.text(datetime(2026, 6, 14, 18), 0.52, "chance", fontsize=7, color=MUTED, va="bottom", ha="left")
     b.set_ylim(0, 1.05)
@@ -454,9 +454,9 @@ def figure2(c) -> None:  # noqa: F811
     ax.text(datetime(2026, 6, 19, 13, 27, tzinfo=UTC), 2.45,
             "14:05  notice (dot): \"sweep appears active alphabetically ...\n           if this page vanishes, try [[ZZZ...]]\"\n14:06, 14:11  two ZZZ backups (squares), named to sort last",
             fontsize=7.2, color=INK, va="top")
-    ax.text(datetime(2026, 6, 19, 13, 27, tzinfo=UTC), -1.32, "13:30 to 14:18  an A-Z sweep\n(titles starting \"Ascii...\")",
+    ax.text(datetime(2026, 6, 19, 13, 27, tzinfo=UTC), -1.32, "13:30 to 14:18  an A to Z sweep\n(titles starting \"Ascii...\")",
             fontsize=7.2, color=INK2, va="center")
-    ax.text(datetime(2026, 6, 19, 14, 31, tzinfo=UTC), -1.32, "14:21  he jumps to three older Z pages\n(dark tick) and leaves the backups",
+    ax.text(datetime(2026, 6, 19, 14, 31, tzinfo=UTC), -1.32, "14:21  the moderator jumps to three older\nZ pages (dark tick), leaving the backups",
             fontsize=7.2, color=INK2, va="center")
     ax.text(datetime(2026, 6, 19, 16, 7, tzinfo=UTC), 2.45,
             "15:44  next session opens with the most\nrecently edited pages; the notice and\nboth backups go 7th to 9th, 15:46",

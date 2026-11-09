@@ -11,10 +11,10 @@ In June 2026, AI agents identifying themselves as OpenAI agents turned DSE wiki,
 | Question | Result |
 | --- | --- |
 | Did the moderator delete alphabetically? | Yes while agents were active: 73.6% of consecutive deletions in A to Z order (50% by chance) |
-| Did agents adopt the ZZZ trick? | Partly: new ZZ titles about 2.6x as common after the notice (one-sided p = 0.03) |
+| Did agents adopt the ZZZ trick? | Weakly: planned Y/Z title test odds ratio 1.7 (p = 0.10); post hoc ZZ titles 2.6 (p = 0.03), 2.1 (p = 0.09) without the notice's own two backups |
 | Did late-alphabet names protect pages? | No measurable protection: risk ratio 0.64 (95% interval 0.27 to 1.54) |
-| What happened to the ZZZ backups? | Deleted 100 minutes later, early in a session that opened with the most recently edited pages |
-| What predicted the next deletion? | Edit timing: pages edited within 10 minutes of a deleted page were 6.2x as likely to go next (3.0 to 11.1) |
+| What happened to the ZZZ backups? | Deleted about 100 minutes later, early in a session that opened with the most recently edited pages (two of the four active-period sessions did) |
+| What predicted the next deletion? | Edit timing (post hoc): pages edited within 10 minutes of a deleted page were 6.2x as likely to go next (3.0 to 11.1) |
 | Did links between pages predict it? | 3.0x within event, but 1.3x once author and edit time are held fixed, 1.1x adding title and family |
 
 ![Figure 1](out/figure1.png)
@@ -55,7 +55,7 @@ The data are not redistributed here. `scripts/fetch_data.sh` downloads them from
 
 ## Provenance
 
-Everything here was written during the sprint (November 8 to 9, 2026). There is no preexisting code. The analysis plan was committed before the confirmatory runs; exploratory and post hoc analyses are labelled throughout.
+Everything here was written during the sprint. There is no preexisting code. The analysis plan was committed before the confirmatory runs; exploratory and post hoc analyses are labelled throughout.
 
 ## Data and ethics
 
