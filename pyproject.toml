@@ -1,7 +1,7 @@
 [project]
 name = "breadcrumbs"
 version = "0.1.0"
-description = "Add your description here"
+description = "Forensics of an AI agent swarm and its human moderator on DSE wiki"
 requires-python = ">=3.12"
 dependencies = [
     "matplotlib>=3.11.2",
