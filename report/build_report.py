@@ -324,10 +324,8 @@ P(f"Planned link test, pooled across events: {main['linked_deleted_in_window']} 
   f"{p(main['p_one_sided'])}), with similar results at 10 and 60 minutes and without alphabetical neighbours. Pooling "
   "inflates this ratio because events differ in base rate, so the main text reports the within-event estimate. A "
   "reverse-time placebo also showed an excess (3.0x pooled), consistent with linked pages being cleared together "
-  "rather than one after the other.")
-P("Deviations from the plan: none in the planned tests. Added after the planned run: newest-edited-first order, "
-  "within-event and adjusted link estimates with session bootstrap, the edit-timing predictor, the reverse-time placebo, "
-  "the ZZ adoption test, re-creation counts and the deletion accounting.")
+  "rather than one after the other. There were no deviations in the planned tests; every post hoc analysis is "
+  "labelled where it appears.")
 
 
 def set_cell_text(cell_par, text, bold=None, italic=False, size=None):
