@@ -37,6 +37,7 @@ def p(x: float) -> str:
 
 TITLE = "Breadcrumbs: An AI Agent Swarm's Own Links Predicted What Its Human Moderator Deleted Next"
 AUTHOR, AFFIL = "Andrei Vince", "University of North Carolina at Charlotte"
+FONT = "Old Standard TT"
 
 ABSTRACT = (
     "In June 2026, AI agents identifying themselves as OpenAI agents turned DSE wiki, a small German programming "
@@ -339,21 +340,17 @@ def build() -> Path:
         if r.element.find(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}footnoteReference") is None:
             r.text = ""
     authors = t0.rows[1].cells[0].tables[0].rows[0].cells[0].tables[0]
-    cells = [c for r in authors.rows for c in r.cells]
-    seen = []
-    for c in cells:
-        if c._tc in seen:
-            continue
-        seen.append(c._tc)
-        for par in c.paragraphs:
-            for r in par.runs:
-                r.text = ""
-    first = authors.rows[0].cells[1]
-    pars = first.paragraphs
-    set_cell_text(pars[0], AUTHOR)
-    set_cell_text(pars[1] if len(pars) > 1 else first.add_paragraph(), AFFIL)
     if len(authors.rows) > 1:
         authors._tbl.remove(authors.rows[1]._tr)
+    merged = authors.cell(0, 0).merge(authors.cell(0, len(authors.columns) - 1))
+    pars = merged.paragraphs
+    for extra in pars[1:]:
+        extra._p.getparent().remove(extra._p)
+    runs0 = pars[0].runs
+    runs0[0].text = f"{AUTHOR}\n{AFFIL}"
+    for r in runs0[1:]:
+        r.text = ""
+    pars[0].alignment = 1
     abstract_cell = t0.rows[1].cells[0].tables[1].rows[0].cells[0]
     ap = abstract_cell.paragraphs
     set_cell_text(ap[0], ABSTRACT, italic=False)
@@ -378,16 +375,27 @@ def build() -> Path:
         if started and el.tag.endswith("}p"):
             body.remove(el)
 
+    from docx.shared import RGBColor
+
     def heading(style, text):
         par = doc.add_paragraph(style=style)
         r = par.add_run(text)
         r.bold = True
+        r.font.name = FONT
+        r.font.size = Pt(14 if style == "Heading 2" else 13)
+        r.font.color.rgb = RGBColor.from_string("434343" if style == "Heading 2" else "666666")
+        par.paragraph_format.space_before = Pt(10)
+        par.paragraph_format.space_after = Pt(3)
         return par
 
-    def para(text, italic=False):
+    def para(text, italic=False, size=11):
         par = doc.add_paragraph(style="normal")
         par.paragraph_format.space_after = Pt(6)
-        par.add_run(text).italic = italic
+        par.paragraph_format.line_spacing = 1.15
+        r = par.add_run(text)
+        r.italic = italic
+        r.font.name = FONT
+        r.font.size = Pt(size)
         return par
 
     for kind, val in SECTIONS:
@@ -406,8 +414,7 @@ def build() -> Path:
             par = doc.add_paragraph(style="normal")
             par.alignment = 1
             par.add_run().add_picture(str(path), width=Inches(width))
-            c = para(cap)
-            c.runs[0].font.size = Pt(9)
+            c = para(cap, size=9)
         elif kind == "table":
             rows, cap = val
             tb = doc.add_table(rows=len(rows), cols=len(rows[0]))
@@ -418,13 +425,12 @@ def build() -> Path:
                     cell.text = ""
                     run = cell.paragraphs[0].add_run(text)
                     run.font.size = Pt(8.5)
+                    run.font.name = FONT
                     run.bold = i == 0
-            c = para(cap)
-            c.runs[0].font.size = Pt(9)
+            c = para(cap, size=9)
         elif kind == "refs":
             for i, ref in enumerate(val, 1):
-                par = para(f"{i}. {ref}")
-                par.runs[0].font.size = Pt(9.5)
+                par = para(f"{i}. {ref}", size=9.5)
     out = OUT / "report.docx"
     doc.save(out)
     words = len(ABSTRACT.split())
