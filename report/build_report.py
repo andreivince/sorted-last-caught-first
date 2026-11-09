@@ -165,10 +165,10 @@ P(f"A losing race, then a long cleanup. The agents created {d['2026-06-16']['cre
   f"{q5['deletion_sessions']} sessions, about {round(q5['deletions_per_active_hour'])} per hour while a session was "
   "running (Figure 1A).")
 FIG(OUT / "figure1.png", 6.5,
-    "Figure 1. (A) Agent pages created per day (above zero) and pages the moderator deleted (below zero) on DSE "
-    "wiki. The dashed line marks the agents' first notice that the sweep looked alphabetical. (B) Share of "
-    "consecutive deletions in A-Z title order for each deletion session of 20 or more (dot size grows with session "
-    "length; orange: active period). Random order gives 0.5.")
+    "Figure 1. (A) Agent pages created per day (orange, above zero) and pages the moderator deleted (blue, below "
+    "zero) on DSE wiki, UTC days. The dashed line marks the agents' first notice that the sweep looked alphabetical. "
+    "(B) Share of consecutive deletions in A-Z title order for each deletion session of 20 or more; dot area grows "
+    "with session length and dark dots are sessions while agents were still creating pages. Random order gives 50%.")
 P(f"The sweep was alphabetical at first. In the active period, {pct(q1['active']['pooled_ascending_share'])} of "
   f"consecutive deletions ran in A-Z order across {q1['active']['sessions']} sessions and "
   f"{q1['active']['deletions']} deletions, and {q1['active']['sessions_p_below_0.01']} of those sessions beat random "
@@ -191,9 +191,14 @@ P("The ZZZ trick did not measurably help. Late-alphabet pages were deleted sligh
   "not once age, size and page type are held fixed (Table 1). The exploratory version of this test looked "
   "significant (1 of 77 against 7.7%, p = 0.016) only because the Y and Z pages alive then were small, old probe "
   "pages (median 71 bytes and 24 days old, against 829 bytes and 2.5 days). The case itself shows why the trick "
-  "failed. The notice was saved at 14:05 UTC on June 19 and its ZZZ backup at 14:06. At 15:46:37 the moderator "
-  "deleted the notice page, and 12 and 22 seconds later both ZZZ backups, out of alphabetical order, as the 8th and "
-  "9th deletions of that session. The backup sat exactly where the notice pointed.")
+  "failed (Figure 2). The notice was saved at 14:05 UTC on June 19 and its ZZZ backup at 14:06. The moderator's next "
+  "session, at 15:44, opened with the newest pages rather than in A-Z order. At 15:46:37 he deleted the notice "
+  "page, and 12 and 22 seconds later both ZZZ backups, as the 7th, 8th and 9th deletions of that session. "
+  "The backup sat exactly where the notice pointed.")
+FIG(OUT / "figure2.png", 6.5,
+    "Figure 2. The ZZZ episode on June 19 (UTC). Top: the agent's notice (dot) and the two ZZZ backup pages "
+    "(squares). Bottom: each tick is one deletion in the moderator's next session. Arrows join each page to its own "
+    "deletion; all three went within 22 seconds, as deletions 7 to 9 of a 79-deletion session.")
 P(f"The swarm barely adopted the idea. The sweep notice appears in {q4['sweep_belief_mentions']} saved revisions, all "
   f"on one page. New ZZ titles went from {q4['zz_before']} of {q4['new_pages_3d_before_notice']:,} new pages in the "
   f"three days before the notice to {q4['zz_after']} of {q4['new_pages_after_notice_to_jun22']} after it, and late "
@@ -201,11 +206,12 @@ P(f"The swarm barely adopted the idea. The sweep notice appears in {q4['sweep_be
   f"{q4['odds_ratio']:.2f}, {p(q4['fisher_late_after_gt_before_p'])}). Re-posting was rare: the exact text of "
   f"{q4['reposted_exact_72h']} of {q4['deletions_to_jun22']} pages deleted by June 22 reappeared on another page "
   f"within 72 hours ({q4['reposted_exact_or_near_72h']} counting near-duplicates).")
-FIG(OUT / "figure2.png", 6.0,
-    "Figure 2. The breadcrumb effect. Orange: share of pages linked from a just-deleted page that the moderator "
-    "deleted in the next window. Blue: matched pages the deleted page did not link to (same creation day and "
-    "initial, or created within one hour). Labels give the risk ratio and the linked count. The bottom row is a "
-    "placebo that looks backwards in time.")
+FIG(OUT / "figure3.png", 6.5,
+    "Figure 3. The breadcrumb effect. (A) A real deletion from June 19: of the nine live pages the deleted page "
+    "linked to, six were deleted within three minutes. (B) Share of linked pages (orange, with 95% Wilson "
+    "interval) and of matched unlinked pages (open) deleted within the window after the linking page; the right "
+    "column is the risk ratio. The bottom row is a placebo that looks at the window before the linking page. "
+    "Rows marked * were added after the planned run.")
 c60, act, rev = ROB["created_within_60"], ROB["active_only"], ROB["reverse_placebo"]
 P(f"Links predicted the next deletions. Of {main['linked_targets']} live pages linked from "
   f"{main['deletion_events_with_alive_links']} deleted pages, {main['linked_deleted_in_window']} "
@@ -214,7 +220,7 @@ P(f"Links predicted the next deletions. Of {main['linked_targets']} live pages l
   f"({q3[(10, False)]['risk_ratio']}x) and 60 minutes ({q3[(60, False)]['risk_ratio']}x), without alphabetical "
   f"neighbours ({q3[(30, True)]['risk_ratio']}x) and with controls created within an hour of the linked page "
   f"({c60['risk_ratio']}x, post hoc). In the active period alone it is {act['risk_ratio']}x "
-  f"({act['linked_deleted_in_window']} of {act['linked_targets']}), though on fewer pages (Figure 2).")
+  f"({act['linked_deleted_in_window']} of {act['linked_targets']}), though on fewer pages (Figure 3).")
 P(f"Part of this is clustering rather than link-following. Linked pages were also deleted more often in the 30 "
   f"minutes before the linking page ({rev['risk_ratio']}x, post hoc), so links partly mark groups of related pages "
   "that the moderator removed together, in whatever order. Order still leans forward: when both pages of a linked "

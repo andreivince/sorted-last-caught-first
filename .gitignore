@@ -4,3 +4,4 @@ template/
 __pycache__/
 *.pyc
 out/cache/
+out_run.log
