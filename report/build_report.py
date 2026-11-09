@@ -457,3 +457,28 @@ def build() -> Path:
 
 if __name__ == "__main__":
     build()
+
+
+def fix_footnote_marker(path: Path) -> None:
+    """LibreOffice ignores the template's footnote-reference style; set the marker font explicitly to match it."""
+    import shutil
+    import zipfile
+    tmp = path.with_suffix(".tmp.docx")
+    old = '<w:rStyle w:val="FootnoteReference"/><w:vertAlign w:val="superscript"/>'
+    new = ('<w:rStyle w:val="FootnoteReference"/><w:rFonts w:ascii="Old Standard TT" w:hAnsi="Old Standard TT" '
+           'w:cs="Old Standard TT" w:eastAsia="Old Standard TT"/><w:sz w:val="20"/><w:szCs w:val="20"/>'
+           '<w:vertAlign w:val="superscript"/>')
+    with zipfile.ZipFile(path) as zin, zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zout:
+        for item in zin.infolist():
+            data = zin.read(item.filename)
+            if item.filename in ("word/footnotes.xml", "word/document.xml"):
+                data = data.decode("utf-8").replace(old, new).encode("utf-8")
+            if item.filename == "word/styles.xml":
+                # the footnote number takes the document default font; Google Docs renders it in the body font
+                data = data.decode("utf-8").replace('<w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>', '<w:rPrDefault><w:rPr><w:rFonts w:ascii="Old Standard TT" w:cs="Old Standard TT" w:eastAsia="Old Standard TT" w:hAnsi="Old Standard TT"/>').encode("utf-8")
+            zout.writestr(item, data)
+    shutil.move(tmp, path)
+
+
+if __name__ == "__main__":
+    fix_footnote_marker(OUT / "report.docx")
