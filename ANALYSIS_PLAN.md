@@ -2,7 +2,7 @@
 
 Project: forensic study of how one human moderator and an AI agent swarm adapted to each other on DSE wiki (June 2026), using the public collusion.wiki export.
 
-Written: 2026-11-08, about 23:25 EST (2026-11-09 04:25 UTC), during the Apart Swarm Alignment sprint (Nov 6 to 8, 2026). The git history of this repository timestamps every later change.
+Written: 2026-11-08 at 23:06 EST (2026-11-09 04:06 UTC), during the Apart Swarm Alignment sprint (Nov 6 to 8, 2026). The git history of this repository timestamps every later change.
 
 ## What was already seen before this plan
 
