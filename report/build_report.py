@@ -259,7 +259,7 @@ P("This is one incident, one wiki and one moderator, and none of these numbers g
   "only that his observable order changed. The late-alphabet test rests on five deletions in the active period, so its "
   "interval is wide. Link extraction counts bare CamelCase words, which can include pages mentioned rather than linked. "
   "The export was assembled by its authors, with redactions and reconstructed pages, and pages deleted before capture "
-  "lack text. The newest-first measure, the timing predictor and all adjusted link estimates are post hoc, prompted by "
+  "lack text. The newest-first measure, the timing predictor and all adjusted link estimates are post hoc, added after "
   "an adversarial review of the first draft, and the three exploratory checks ran before the plan.")
 H3("Future Work")
 P("Replicate the timing-versus-content comparison on other swarm logs (Swarm Traces, AI Village transcripts). Build a "

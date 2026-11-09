@@ -1,4 +1,4 @@
-"""Post hoc confound checks prompted by an independent adversarial review (Nov 8, 2026).
+"""Post hoc confound checks added after the planned run (Nov 8, 2026).
 
 Usage: uv run python -m breadcrumbs.confounds  -> out/confounds.json
 """
