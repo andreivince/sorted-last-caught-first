@@ -16,7 +16,8 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out"
 R = json.loads((OUT / "results.json").read_text())
 ROB = json.loads((OUT / "robustness.json").read_text())
-DIR = json.loads((OUT / "direction.json").read_text())
+CF = json.loads((OUT / "confounds.json").read_text())
+SUB = json.loads((ROOT / "report" / "submission.json").read_text())
 
 q1 = R["q1_order"]["30"]
 q2 = R["q2_survival"]
@@ -25,6 +26,15 @@ q4 = R["q4_response"]
 q5 = R["q5_workload"]
 main = q3[(30, False)]
 d = q5["daily"]
+mh = CF["mh"]
+e10 = CF["edited_within_10min"]
+zz = CF["zz_naming"]
+lrr = CF["late_alphabet_rr"]
+acc = CF["deletion_accounting"]
+rec_after = [r["newest_first_share"] for r in CF["recency_sessions"] if r["start"] > "2026-06-23"]
+rec_after_sorted = sorted(rec_after)
+rec_median = rec_after_sorted[len(rec_after_sorted) // 2]
+rec_hi = sum(x >= 0.65 for x in rec_after)
 
 
 def pct(x: float, nd: int = 1) -> str:
@@ -35,26 +45,30 @@ def p(x: float) -> str:
     return "p < 0.001" if x < 0.001 else f"p = {x:.2f}" if x >= 0.01 else f"p = {x:.3f}"
 
 
-TITLE = "Breadcrumbs: An AI Agent Swarm's Own Links Predicted What Its Human Moderator Deleted Next"
+def ci(r: dict) -> str:
+    return f"{r['rr']:.1f}x (95% interval {r['lo']:.1f} to {r['hi']:.1f})"
+
+
+TITLE = "Sorted Last, Caught First: How an AI Agent Swarm Tried to Outlast Its Human Moderator"
 AUTHOR, AFFIL = "Andrei Vince", "University of North Carolina at Charlotte"
 FONT = "Old Standard TT"
 
 ABSTRACT = (
-    "In June 2026, AI agents identifying themselves as OpenAI agents turned DSE wiki, a small German programming "
-    f"wiki, into a message board, creating up to {d['2026-06-18']['created']:,} pages a day while one volunteer "
-    "moderator deleted them by hand. Press coverage repeated an anecdote from the incident report: the agents "
-    "noticed the moderator was deleting pages alphabetically and named a backup page \"ZZZ...\" so it would be "
-    "deleted last. We test that story, and a broader question it raises for oversight: what does a swarm's own "
-    f"coordination structure reveal to the person policing it? Using the public collusion.wiki export ({R['deletions']:,} "
-    "timestamped deletions on DSE wiki), we find that the alphabetical sweep was real at first "
-    f"({pct(q1['active']['pooled_ascending_share'])} of consecutive deletions in A-Z order, against 50% by chance), but "
-    "the ZZZ trick did not measurably help: with page age, size and type held fixed, late-alphabet pages were not "
-    f"deleted less often ({p(q2['late_active']['p_stratified_one_sided'])}). The stronger signal ran the other way. "
-    "When the moderator deleted a page, the pages it linked to were deleted within the next 30 minutes "
-    f"{main['risk_ratio']} times as often as matched pages it did not link to ({pct(main['rate_linked'])} against "
-    f"{pct(main['rate_control'])}), across every time window and control we tried. The links agents wrote so they "
-    "could find each other's notes also pointed at what an overseer would remove next. We release a one-command "
-    "analysis with no model calls and discuss what this means for cheap oversight of agent swarms."
+    "In June 2026, AI agents identifying themselves as OpenAI agents turned DSE wiki, a small German programming wiki, "
+    f"into a message board, creating up to {d['2026-06-18']['created']:,} pages a day while one volunteer moderator "
+    "deleted them by hand. One agent noticed the deletions ran alphabetically and named its backup pages \"ZZZ...\" so they "
+    "would be deleted last. We use the public collusion.wiki export, with "
+    f"{R['deletions']:,} timestamped deletions, to measure how the two sides adapted to each other. The agents read the "
+    f"moderator correctly: {pct(q1['active']['pooled_ascending_share'], 0)} of his consecutive deletions ran A to Z "
+    f"while they were active, and ZZ-style names became about {zz['odds_ratio']:.1f} times as common after the notice "
+    f"(p = {zz['p_one_sided']:.2f}). The trick still failed. The moderator's sessions opened with the most recently "
+    "edited pages, and fresh backups are exactly that, so both ZZZ pages were gone within 100 minutes. Across the incident, "
+    f"late-alphabet names gave no measurable protection (risk ratio {lrr['rr']:.2f}, 95% interval {lrr['lo']:.2f} to "
+    f"{lrr['hi']:.2f}). What predicted the next deletion was edit timing: pages edited within ten minutes of a deleted "
+    f"page were {e10['rr']:.1f} times as likely to go next. The swarm's links between pages looked predictive "
+    f"({mh['event']['rr']:.1f}x) but added little once author and edit timing were held fixed "
+    f"({mh['event+label+lastsave+prefix+family']['rr']:.1f}x). Agents can learn a visible oversight rule within a day, and "
+    "an overseer whose order shifts can beat an evasion built for the old one."
 )
 
 SECTIONS: list[tuple[str, object]] = []
@@ -85,232 +99,233 @@ def TABLE(rows, caption):
 
 
 H2("1. Introduction")
-P("Most safety testing still happens one model at a time. The 2026 incidents that motivate this sprint did not: "
-  "in the Hugging Face case about 1,200 agents coordinated through a shared folder (METR, 2026), and on DSE wiki "
-  "agents turned a public wiki into a bulletin board for weeks before anyone outside noticed (Von Arx et al., 2026). "
-  "When a swarm like this is found, the first line of defence is often not a classifier but a person deleting "
-  "things by hand. How that person and the swarm adapt to each other is a question about oversight under pressure, "
-  "and there is almost no data on it.")
-P("DSE wiki is an unusually clean case. One moderator, recorded in the logs as [Admin1], made every one of "
-  f"{q5['deletions_total']:,} deletions, each with a title and a timestamp to the second. The agents left their own "
-  "notes about him. One wrote at 14:05 UTC on June 19 that a \"wiki cleanup/deletion sweep appears active "
-  "alphabetically\" and linked a backup page whose name began with ZZZ. That anecdote travelled through the press. "
-  "Nobody had checked whether the sweep was alphabetical, whether the trick worked, or what else the logs say "
-  "about who was outmanoeuvring whom.")
-P("Our main contributions are:")
+P("Most safety testing still happens one model at a time. The 2026 incidents that motivate this sprint did not: in the "
+  "Hugging Face case about 1,200 agents coordinated through a shared folder (METR, 2026), and on DSE wiki agents turned a "
+  "public wiki into a bulletin board for weeks before outside researchers documented it (Von Arx et al., 2026). When a "
+  "swarm like this is found, the first line of defence is often a person deleting things by hand. If the agents can watch "
+  "that person work, they can learn the pattern and route around it. How fast that happens, and whether it works, is a "
+  "question about oversight under adaptation, and there is almost no field data on it.")
+P(f"DSE wiki is an unusually clean case. One moderator, recorded as [Admin1], made all {q5['deletions_total']:,} "
+  "deletions, each with a title and a timestamp to the second, and the agents left notes about him. At 14:05 UTC on June "
+  "19 one agent wrote that a \"wiki cleanup/deletion sweep appears active alphabetically\" and pointed readers to a backup "
+  "page whose name began with ZZZ. The incident report describes this as what the agents believed. We test it.")
+P("Our main findings are:")
 L([
-    "A first quantitative test of the moderator-swarm interaction on DSE wiki. The alphabetical sweep was real in "
-    "the first days and faded later. The ZZZ evasion had no measurable effect once page age, size and type are "
-    "controlled, and the notice about it stayed on a single page.",
-    f"The breadcrumb effect: pages linked from a page the moderator just deleted were deleted in the next 30 "
-    f"minutes {main['risk_ratio']} times as often as matched unlinked pages. The swarm's coordination links were "
-    "the best predictor we found of what the overseer did next, which suggests a cheap signal for monitoring "
-    "swarms that coordinate in public.",
-    "An open, reproducible forensic pipeline: checksummed public data, an analysis plan committed to git before the "
-    "confirmatory runs, every test reported including the null ones, and no model calls.",
+    f"The agents read the moderator correctly, and partly acted on it. While they were active, "
+    f"{pct(q1['active']['pooled_ascending_share'], 0)} of his consecutive deletions ran in A to Z order (50% by chance), "
+    f"and new ZZ-style titles became {zz['odds_ratio']:.1f} times as common after the notice.",
+    "The evasion failed because the moderator did not only sort by name. His sessions often opened with the most recently "
+    "edited pages, which is exactly what a brand-new backup is. Both ZZZ backups were deleted 100 minutes after they were "
+    f"made, and late-alphabet names gave no measurable protection overall ({lrr['rr']:.2f}x, interval {lrr['lo']:.2f} to "
+    f"{lrr['hi']:.2f}).",
+    f"Edit timing, not content links, predicted his next deletion. Pages edited within ten minutes of a just-deleted page "
+    f"were {e10['rr']:.1f}x as likely to go in the next 30 minutes. Links between pages showed {mh['event']['rr']:.1f}x "
+    f"but fell to {mh['event+label+lastsave+prefix+family']['rr']:.1f}x once shared author and edit time were held fixed.",
 ])
+P("We release a one-command, checksummed analysis with an analysis plan committed before the confirmatory runs, every "
+  "test reported including the nulls, and no model calls. The scope is one incident: these are measurements of what "
+  "happened on DSE wiki, not general laws of swarm behaviour.")
 
 H2("2. Related Work")
-P("Incident reports. The collusion.wiki report (Von Arx et al., 2026) documents the DSE wiki activity and released "
-  "the export we use; it describes the deletion race and the ZZZ anecdote in prose. The METR investigation of the "
-  "Hugging Face incident (METR, 2026) and the Swarm Traces reconstruction document coordination, renaming and log "
-  "tampering in a different swarm. These works establish what happened. We measure how oversight and the swarm "
-  "interacted, which none of them quantifies.")
-P("Multi-agent risk and control. Hammond et al. (2025) lay out how agent populations can fail in ways their members "
-  "do not, including collusion and miscoordination. Motwani et al. (2024) study secret collusion and steganographic "
-  "channels between models, and Greenblatt et al. (2023) define control protocols in which a trusted monitor "
-  "oversees an untrusted model. Recent work shows agents can tamper with their own traces (arXiv 2609.30266). "
-  "These studies use constructed settings. Our evidence comes from a real swarm and a real human overseer, and it "
-  "points at an overseer's advantage rather than an attacker's: the coordination structure itself.")
-P("Moderation of automated accounts. Geiger and Ribes (2010) describe how Wikipedia's human editors and tools "
-  "track vandals by following their trail of edits across pages. The breadcrumb effect is the same idea, applied "
-  "to a swarm whose trail is written into its own pages as links.")
+P("Incident reports. The collusion.wiki report (Von Arx et al., 2026) documents the DSE wiki activity, released the export "
+  "we use, and tells the ZZZ story in prose. The METR investigation of the Hugging Face incident (METR, 2026) and the "
+  "Swarm Traces reconstruction (Forman et al., 2026) document coordination, renaming and log tampering in another swarm. "
+  "They establish what happened; none measures how the overseer and the swarm adapted to each other.")
+P("Multi-agent risk and control. Hammond et al. (2025) describe how agent populations fail in ways their members do not. "
+  "Motwani et al. (2024) study covert collusion between models, Greenblatt et al. (2023) define control protocols with a "
+  "trusted monitor, and Qin, Schmotz et al. (2026) show agents can tamper with their own traces. These use constructed "
+  "settings; ours is a real swarm adapting to a real, unaided human.")
+P("Detecting coordinated accounts. Spam and Sybil detection propagates suspicion along graphs (TrustRank, Gyöngyi et al., "
+  "2004; SybilRank, Cao et al., 2012), and coordinated-behaviour detection on social media relies on shared timing and "
+  "content (Pacheco et al., 2021). On Wikipedia, revision metadata such as editing time and author predicts vandalism "
+  "better than content alone (West et al., 2010). Our link-versus-timing result is a small field replication of that last "
+  "point for an AI swarm.")
 
 H2("3. Methods")
 P(f"Data. We use the collusion.wiki export published on September 4, 2026, verified against its published SHA-256 "
-  f"checksums, and keep only DSE wiki: {R['pages']:,} agent pages, their saved revisions with full text, and "
-  f"{R['deletions']:,} deletions. The publishers redacted user names and half of each IP address. A page's creation "
-  "time is its first save. A deletion session is a run of deletions with gaps of at most 30 minutes (sensitivity "
-  "10 and 60). The active period runs to June 22, 23:59 UTC, the last day agents created pages.")
-P("Plan. Before the confirmatory runs we committed an analysis plan to git (ANALYSIS_PLAN.md, 23:06 EST on November 8). "
-  "Three short exploratory checks had been run first to decide whether the project was worth doing; the plan "
-  "lists what they showed. Checks added after the planned run are labelled post hoc throughout.")
-P("Q1, deletion order. For each session with at least 20 deletions we count the share of consecutive deletions in "
-  "ascending case-insensitive title order and compare it with 10,000 random orderings of the same titles.")
-P("Q2, did ZZZ names survive longer? For every session in the active period, every page alive at the session start "
-  "is a row; the outcome is whether it was deleted in that session and the exposure is a title starting with Y or "
-  "Z (separately, with ZZ). Late-alphabet pages differ from the rest in age and size, so we permute the exposure "
-  "label within strata of age quartile, size quartile and page family (5,000 permutations). The same test after "
-  "June 22 serves as a placebo.")
-P("Q3, the breadcrumb test. We build each page's outgoing links from its last saved text before deletion: "
-  "[[bracket]] links and bare CamelCase words that exactly match another agent page title (the wiki links "
-  "CamelCase words automatically). For each deletion of a page that linked to pages still alive, the outcome is "
-  "whether a linked page was deleted within the next 30 minutes. Controls are alive pages it did not link to, "
-  "created on the same day with the same initial letter, so alphabetical sweeps cannot explain the difference. "
-  "The null shuffles which pages count as linked within each event's matched pool (2,000 permutations). "
-  "Sensitivity: 10 and 60 minute windows, and removing pages within three places of the deleted page in "
-  "alphabetical order. Post hoc we added controls created within one hour of the linked page, the active period "
-  "alone, a reverse-order placebo (linked pages deleted in the 30 minutes before the linking page), and a test of "
-  "which page of a linked pair went first.")
-P("Q4 and Q5. We count pages that mention the alphabetical sweep, compare the share of new pages with late-alphabet "
-  "or ZZ titles in the three days before the first notice and after it (Fisher's exact test), and check whether a "
-  "deleted page's text reappeared on another page within 72 hours (exact match, or word 5-gram Jaccard of at least "
-  "0.8). Q5 counts daily creations and deletions. Everything runs in Python with NumPy and SciPy; no language "
-  "model is called anywhere in the analysis.")
+  f"checksums, and keep only DSE wiki. The export holds {R['pages']:,} agent pages with full revision text and "
+  f"{acc['deletions']:,} deletion events. {acc['deletions_on_pages_never_captured']:,} deletions hit "
+  f"{acc['distinct_uncaptured_pages']:,} pages whose content was never captured, and {acc['repeat_deletions']} are "
+  "repeat deletions of a re-created page; those count in the order analyses but have no text for the link analyses. "
+  "User names and half of each IP address were redacted by the publishers. A deletion session is a run of deletions with "
+  "gaps of at most 30 minutes (sensitivity: 10 and 60). The active period runs to June 22, 23:59 UTC, the last day agents "
+  "created pages.")
+P("Plan and provenance. All code was written during the sprint. An analysis plan (ANALYSIS_PLAN.md) was committed to git "
+  "at 23:06 EST on November 8, before the confirmatory runs; three short exploratory checks run before it are kept in "
+  "scripts/exploratory/ and listed in the plan. After the planned run an independent adversarial review re-ran the data "
+  "and proposed confound checks, which we adopted and mark as post hoc.")
+P("Deletion order. For each session of 20 or more deletions we count the share of consecutive pairs in A to Z title order "
+  "(compared with 10,000 random orderings) and, post hoc, the share in which the later deletion had an older last edit "
+  "(newest-edited first, the order of the wiki's Recent Changes list).")
+P("ZZZ protection. Every page alive at the start of an active-period session is a row; the outcome is deletion in that "
+  "session, the exposure a title starting with Y or Z (or ZZ). Because those pages differ in age and size, we permute the "
+  "exposure within strata of age quartile, size quartile and page family. Adoption: share of new ZZ titles in the three "
+  "days before and after the notice (Fisher's exact test).")
+P("What predicts the next deletion. For each deletion of a page with live links, candidates are live pages created the "
+  "same day with the same initial. Links are [[bracket]] links plus bare CamelCase words matching a page title (the wiki "
+  "is a UseModWiki fork, which links CamelCase words automatically). The outcome is deletion within 30 minutes. We "
+  "estimate within-event Mantel-Haenszel risk ratios, stratify further by shared agent label, last-edit gap, title "
+  "prefix and page family, and get 95% intervals from a bootstrap over deletion sessions, since pages in one session are "
+  "not independent. The same machinery scores a timing predictor: last edited within ten minutes of the deleted page. "
+  "Everything runs in Python with NumPy and SciPy; no language model is called.")
 
 H2("4. Results")
-P(f"A losing race, then a long cleanup. The agents created {d['2026-06-16']['created']} pages on June 16, "
-  f"{d['2026-06-17']['created']} on June 17 and {d['2026-06-18']['created']:,} on June 18, when the moderator "
-  f"deleted {d['2026-06-18']['deleted']}. He deleted {d['2026-06-19']['deleted']} the next day, the agents stopped "
-  f"creating pages after June 22, and he kept going for three more weeks: {q5['deletions_total']:,} deletions in "
-  f"{q5['deletion_sessions']} sessions, about {round(q5['deletions_per_active_hour'])} per hour while a session was "
-  "running (Figure 1A).")
+H3("4.1 The moderator was outpaced, then cleaned up for three weeks")
+P(f"Agents created {d['2026-06-16']['created']} pages on June 16, {d['2026-06-17']['created']} on June 17 and "
+  f"{d['2026-06-18']['created']:,} on June 18, when the moderator deleted {d['2026-06-18']['deleted']}. Page creation "
+  "stopped after June 22, for reasons outside this data (the incident report points to intervention by the provider). "
+  f"He kept deleting until July 14: {q5['deletions_total']:,} deletions in {q5['deletion_sessions']} sessions, about "
+  f"{round(q5['deletions_per_active_hour'])} an hour while a session ran (Figure 1A).")
 FIG(OUT / "figure1.png", 6.5,
-    "Figure 1. (A) Agent pages created per day (orange, above zero) and pages the moderator deleted (blue, below "
-    "zero) on DSE wiki, UTC days. The dashed line marks the agents' first notice that the sweep looked alphabetical. "
-    "(B) Share of consecutive deletions in A-Z title order for each deletion session of 20 or more; dot area grows "
-    "with session length and dark dots are sessions while agents were still creating pages. Random order gives 50%.")
-P(f"The sweep was alphabetical at first. In the active period, {pct(q1['active']['pooled_ascending_share'])} of "
-  f"consecutive deletions ran in A-Z order across {q1['active']['sessions']} sessions and "
-  f"{q1['active']['deletions']} deletions, and {q1['active']['sessions_p_below_0.01']} of those sessions beat random "
-  f"order at p < 0.01. Afterwards the order loosened to {pct(q1['after']['pooled_ascending_share'])} "
-  f"({q1['after']['sessions_p_below_0.01']} of {q1['after']['sessions']} sessions at p < 0.01), before a final "
-  "alphabetical cleanup on July 12 to 14 (Figure 1B). Results are the same with 10 or 60 minute session gaps "
-  "(Appendix B). So the agents read the moderator correctly, for the first few days.")
-la, za, lp = q2["late_active"], q2["zz_active"], q2["late_after_placebo"]
-TABLE([
-    ["Exposure (active period)", "Deleted in session, exposed", "Unexposed", "Stratified p (one-sided)"],
-    ["Title starts with Y or Z", f"{la['exposed_deleted']}/{la['exposed_rows']} ({pct(la['rate_exposed'])})",
-     f"{pct(la['rate_unexposed'])}", f"{la['p_stratified_one_sided']:.2f}"],
-    ["Title starts with ZZ", f"{za['exposed_deleted']}/{za['exposed_rows']} ({pct(za['rate_exposed'])})",
-     f"{pct(za['rate_unexposed'])}", f"{za['p_stratified_one_sided']:.2f}"],
-    ["Y or Z, after June 22 (placebo)", f"{lp['exposed_deleted']}/{lp['exposed_rows']} ({pct(lp['rate_exposed'])})",
-     f"{pct(lp['rate_unexposed'])}", f"{lp['p_stratified_one_sided']:.2f}"],
-], "Table 1. Did late-alphabet titles protect a page? Rows are page-session pairs: every page alive when a "
-   "deletion session started. Exposure labels are permuted within strata of page age, size and family.")
-P("The ZZZ trick did not measurably help. Late-alphabet pages were deleted slightly less often in raw numbers, but "
-  "not once age, size and page type are held fixed (Table 1). The exploratory version of this test looked "
-  "significant (1 of 77 against 7.7%, p = 0.016) only because the Y and Z pages alive then were small, old probe "
-  "pages (median 71 bytes and 24 days old, against 829 bytes and 2.5 days). The case itself shows why the trick "
-  "failed (Figure 2). The notice was saved at 14:05 UTC on June 19 and its ZZZ backup at 14:06. The moderator's next "
-  "session, at 15:44, opened with the newest pages rather than in A-Z order. At 15:46:37 he deleted the notice "
-  "page, and 12 and 22 seconds later both ZZZ backups, as the 7th, 8th and 9th deletions of that session. "
-  "The backup sat exactly where the notice pointed.")
+    "Figure 1. (A) Agent pages created per day (orange) and pages the moderator deleted (blue) on DSE wiki, UTC days. The "
+    "dashed line marks the agents' notice that the sweep looked alphabetical. (B) For each deletion session of 20 or "
+    "more, the share of consecutive deletions in A to Z title order (blue circles) and in newest-edited-first order "
+    "(violet diamonds); marker area grows with session length. 50% is chance for both.")
+H3("4.2 The agents read his order correctly")
+P(f"In the active period {pct(q1['active']['pooled_ascending_share'])} of consecutive deletions ran A to Z across "
+  f"{q1['active']['sessions']} sessions and {q1['active']['deletions']} deletions, and "
+  f"{q1['active']['sessions_p_below_0.01']} of the 4 sessions beat random order at p < 0.01. The notice that the sweep "
+  f"\"appears active alphabetically\" was accurate. Some agents acted on it: new ZZ titles went from {q4['zz_before']} of "
+  f"{q4['new_pages_3d_before_notice']:,} in the three days before the notice to {q4['zz_after']} of "
+  f"{q4['new_pages_after_notice_to_jun22']} after it (odds ratio {zz['odds_ratio']:.1f}, one-sided p = "
+  f"{zz['p_one_sided']:.2f}). The notice itself sat on one page, edited {q4['sweep_belief_mentions']} times, and pages "
+  f"were often re-created after deletion ({CF['recreations']['total']} re-creations on {CF['recreations']['pages']} "
+  "pages).")
+H3("4.3 The backups were caught first, not last")
+P("Figure 2 shows the episode. At 14:05 the notice went up; ZZZ backups followed at 14:06 and 14:11, while an A to Z sweep "
+  "was running through titles beginning \"Ascii\". At 14:21 the moderator jumped to three older Z pages and left the new "
+  "backups. His next session, at 15:44, opened with the most recently edited pages: four of the first five deletions are the four "
+  "most recently edited live pages, in order. The notice and both backups followed as deletions 7, 8 and 9, at 15:46. A "
+  "recency rule explains their position; whether he also followed the notice's link cannot be told from the log.")
 FIG(OUT / "figure2.png", 6.5,
-    "Figure 2. The ZZZ episode on June 19 (UTC). Top: the agent's notice (dot) and the two ZZZ backup pages "
-    "(squares). Bottom: each tick is one deletion in the moderator's next session. Arrows join each page to its own "
-    "deletion; all three went within 22 seconds, as deletions 7 to 9 of a 79-deletion session.")
-P(f"The swarm barely adopted the idea. The sweep notice appears in {q4['sweep_belief_mentions']} saved revisions, all "
-  f"on one page. New ZZ titles went from {q4['zz_before']} of {q4['new_pages_3d_before_notice']:,} new pages in the "
-  f"three days before the notice to {q4['zz_after']} of {q4['new_pages_after_notice_to_jun22']} after it, and late "
-  f"initials overall from {q4['late_initial_before']} to {q4['late_initial_after']} (odds ratio "
-  f"{q4['odds_ratio']:.2f}, {p(q4['fisher_late_after_gt_before_p'])}). Re-posting was rare: the exact text of "
-  f"{q4['reposted_exact_72h']} of {q4['deletions_to_jun22']} pages deleted by June 22 reappeared on another page "
-  f"within 72 hours ({q4['reposted_exact_or_near_72h']} counting near-duplicates).")
+    "Figure 2. June 19, 2026 (UTC). Top: the agent's notice (dot) and its two ZZZ backups (squares). Bottom: every "
+    "deletion by the moderator (ticks; dark: the three older Z pages at 14:21). Arrows join each page to its own "
+    "deletion. The backups, named to sort last, were among the first pages removed in the next session.")
+la = q2["late_active"]
+P(f"Across the active period the names bought nothing measurable. Pages titled Y or Z were deleted in "
+  f"{la['exposed_deleted']} of {la['exposed_rows']} page-sessions ({pct(la['rate_exposed'])}) against "
+  f"{pct(la['rate_unexposed'])} for the rest, a risk ratio of {lrr['rr']:.2f} with an interval from {lrr['lo']:.2f} to "
+  f"{lrr['hi']:.2f}, and the stratified test finds no difference (p = {la['p_stratified_one_sided']:.2f}; Table 1). The "
+  "data are thin, five deletions of late-alphabet pages, so the honest reading is no detectable protection rather than "
+  "proof of none. After June 22 the moderator's order loosened: the median session had "
+  f"{pct(rec_median, 0)} of its consecutive deletions in newest-edited-first order ({rec_hi} of {len(rec_after)} "
+  f"sessions at 65% or more), against {pct(q1['after']['pooled_ascending_share'], 0)} in A to Z order, before a final "
+  "A to Z cleanup on July 12 to 14 (Figure 1B).")
+TABLE([
+    ["Exposure, active period", "Deleted in session (exposed)", "Unexposed", "Stratified p"],
+    ["Title starts with Y or Z", f"{la['exposed_deleted']}/{la['exposed_rows']} ({pct(la['rate_exposed'])})",
+     pct(la['rate_unexposed']), f"{la['p_stratified_one_sided']:.2f}"],
+    ["Title starts with ZZ", f"{q2['zz_active']['exposed_deleted']}/{q2['zz_active']['exposed_rows']} "
+     f"({pct(q2['zz_active']['rate_exposed'])})", pct(q2['zz_active']['rate_unexposed']),
+     f"{q2['zz_active']['p_stratified_one_sided']:.2f}"],
+    ["Y or Z, after June 22 (placebo)", f"{q2['late_after_placebo']['exposed_deleted']}/"
+     f"{q2['late_after_placebo']['exposed_rows']} ({pct(q2['late_after_placebo']['rate_exposed'])})",
+     pct(q2['late_after_placebo']['rate_unexposed']), f"{q2['late_after_placebo']['p_stratified_one_sided']:.2f}"],
+], "Table 1. Did a late-alphabet title protect a page? Rows are page-session pairs: every page alive when a deletion "
+   "session started. The exposure label is permuted within strata of page age, size and family (5,000 permutations).")
+H3("4.4 Edit timing, not links, predicted the next deletion")
+P(f"Pages edited within ten minutes of a just-deleted page were deleted in the next 30 minutes {ci(e10)} as often as "
+  f"other candidates in the same event ({e10['pred_hits']:,} next deletions). Pages the deleted page linked to showed "
+  f"{ci(mh['event'])}, a real but weaker signal ({main['linked_deleted_in_window']} of {main['linked_targets']} linked "
+  f"pages, {CF['distinct_linked_pages']} distinct). Linked pages tend to share an author and an editing burst with the "
+  f"page that links to them, and holding those fixed shrinks the link effect to {ci(mh['event+label'])} with the "
+  f"author, {ci(mh['event+label+lastsave'])} adding edit time, and {ci(mh['event+label+lastsave+prefix+family'])} adding "
+  "title prefix and page family (Figure 3). The links mostly marked bursts of related pages that the moderator cleared "
+  "together.")
 FIG(OUT / "figure3.png", 6.5,
-    "Figure 3. The breadcrumb effect. (A) A real deletion from June 19: of the nine live pages the deleted page "
-    "linked to, six were deleted within three minutes. (B) Share of linked pages (orange, with 95% Wilson "
-    "interval) and of matched unlinked pages (open) deleted within the window after the linking page; the right "
-    "column is the risk ratio. The bottom row is a placebo that looks at the window before the linking page. "
-    "Rows marked * were added after the planned run.")
-c60, act, rev = ROB["created_within_60"], ROB["active_only"], ROB["reverse_placebo"]
-P(f"Links predicted the next deletions. Of {main['linked_targets']} live pages linked from "
-  f"{main['deletion_events_with_alive_links']} deleted pages, {main['linked_deleted_in_window']} "
-  f"({pct(main['rate_linked'])}) were deleted within 30 minutes, against {pct(main['rate_control'])} of matched "
-  f"unlinked pages, a risk ratio of {main['risk_ratio']} ({p(main['p_one_sided'])}). The effect holds at 10 minutes "
-  f"({q3[(10, False)]['risk_ratio']}x) and 60 minutes ({q3[(60, False)]['risk_ratio']}x), without alphabetical "
-  f"neighbours ({q3[(30, True)]['risk_ratio']}x) and with controls created within an hour of the linked page "
-  f"({c60['risk_ratio']}x, post hoc). In the active period alone it is {act['risk_ratio']}x "
-  f"({act['linked_deleted_in_window']} of {act['linked_targets']}), though on fewer pages (Figure 3).")
-P(f"Part of this is clustering rather than link-following. Linked pages were also deleted more often in the 30 "
-  f"minutes before the linking page ({rev['risk_ratio']}x, post hoc), so links partly mark groups of related pages "
-  "that the moderator removed together, in whatever order. Order still leans forward: when both pages of a linked "
-  f"pair were deleted within 30 minutes of each other, the linked page went second in {DIR['linked_after']} of "
-  f"{DIR['linked_after'] + DIR['linked_before']} pairs ({pct(DIR['linked_share_after'], 0)}), against "
-  f"{pct(DIR['baseline_share_after'], 0)} for matched unlinked pairs ({p(DIR['fisher_p_linked_vs_baseline'])}). "
-  "The data cannot tell us whether he clicked links. They do show that the link graph carried most of the "
-  "information about what he would delete next.")
+    "Figure 3. What predicted the moderator's next deletion. Within-event Mantel-Haenszel risk ratios for being deleted "
+    "in the 30 minutes after a candidate's neighbour was deleted, with 95% intervals from a bootstrap over deletion "
+    f"sessions. Orange: being linked from the deleted page, then adjusted for shared agent label, last-edit gap, title "
+    f"prefix and page family. Violet: last edited within ten minutes of the deleted page. Based on "
+    f"{CF['events']} deletion events and {CF['linked_rows'] + CF['control_rows']:,} candidate pages.")
 
 H2("5. Discussion and Limitations")
-P("Coordination leaves a trail. A swarm that works through a shared medium has to leave pointers, so its members "
-  "can find each other's notes. On DSE wiki those pointers were the most useful signal for predicting the next "
-  "deletions, far more than anything in the agents' attempt to game the moderator. For overseers this suggests a "
-  "cheap tactic: once one swarm artifact is confirmed, rank its linked neighbours first, the way contact tracing "
-  "works outward from a case. For swarm builders and evaluators it suggests a trade-off worth measuring: hiding "
-  "the links costs coordination, and keeping them costs exposure.")
-P("The evasion story deserves a correction. The agents did notice a real pattern, but one agent's notice did not "
-  "spread, the countermeasure barely changed naming, and the pages it protected were removed with the notice that "
-  "advertised them. The swarm stopped creating pages on June 22 for reasons outside this data; the collusion.wiki "
-  "authors point to intervention on the provider side. Neither side \"won\" the race on the wiki itself.")
+P("Agents learn the overseer's visible rule. Within a day of the first large sweep, an agent had inferred the "
+  "moderator's sort order from the outside, written it down for others, and built a countermeasure, and the "
+  "countermeasure spread modestly. Nobody told the agents to evade. For anyone overseeing swarms by hand this is a "
+  "concrete warning: a predictable order is information the swarm can use.")
+P("An order that shifts beats an evasion built for the old one. The ZZZ trick was tuned to A to Z sorting. The moderator "
+  "also worked newest-first, and new pages are what an evader creates, so the countermeasure made its own pages easy "
+  "to find. Mixing or randomizing review order costs a human little and removes the regularity a swarm can learn. For "
+  "automated monitors the timing result points the same way: who edited what, and when, carries most of the signal, "
+  "consistent with work on vandalism and coordinated accounts. Content links between swarm pages added little beyond it.")
 H3("Limitations")
-P("This is one incident, one wiki and one moderator, so none of these numbers generalize on their own. We see "
-  "deletions, not the moderator's screen: he may have used Recent Changes, search or page history, and the "
-  "reverse-order placebo shows that clustering explains part of the link effect. Link extraction is heuristic: "
-  "bare CamelCase words that match a title count as links, which can include pages merely named rather than "
-  "linked. The export was assembled by its authors, with redactions and some reconstructed pages, and pages "
-  "deleted before capture may be missing. Several robustness checks were added after the planned run and are "
-  "marked as such; the three exploratory checks ran before the plan was written. The active period is short "
-  "(four large sessions), so tests limited to it carry wide uncertainty.")
+P("This is one incident, one wiki and one moderator, and none of these numbers generalize on their own. We see deletions, "
+  "not the moderator's screen or intent; he may never have read the agents' notes, and \"adaptation\" on his side means "
+  "only that his observable order changed. The late-alphabet test rests on five deletions in the active period, so its "
+  "interval is wide. Link extraction counts bare CamelCase words, which can include pages mentioned rather than linked. "
+  "The export was assembled by its authors, with redactions and reconstructed pages, and pages deleted before capture "
+  "lack text. The newest-first measure, the timing predictor and all adjusted link estimates are post hoc, prompted by "
+  "an adversarial review of the first draft, and the three exploratory checks ran before the plan.")
 H3("Future Work")
-P("Test the breadcrumb signal on other swarm logs (Swarm Traces, AI Village transcripts) and as a working triage "
-  "tool: given one confirmed page, how much of a swarm can link-ranking recover per page reviewed? In a sandbox, "
-  "give agents an overseer who follows links and measure whether they learn to stop linking, and what that costs "
-  "their coordination. Asking the moderator how he worked would settle the clustering question directly.")
+P("Replicate the timing-versus-content comparison on other swarm logs (Swarm Traces, AI Village transcripts). Build a "
+  "sandbox in which agents face a moderator with a fixed, mixed or random order and measure how fast they learn it and "
+  "what evasion costs them. Asking the moderator how he worked would settle what the log cannot.")
 
 H2("6. Conclusion")
-P(f"The best-known anecdote of this incident, agents outsmarting their moderator with ZZZ page names, does not hold "
-  f"up: the sweep was alphabetical only at first and the trick had no measurable effect. What the logs do show is "
-  f"that the swarm's own links predicted the moderator's next deletions about {round(main['risk_ratio'])} times better "
-  "than chance-matched pages. Oversight of agent swarms may get more from the structure agents need in order to "
-  "coordinate than from what any single agent says.")
+P("The agents on DSE wiki did what the anecdote says: they spotted their moderator's alphabetical order and named their "
+  "backups to sort last. The logs show the rest of the story. His order was not only alphabetical, the backups were "
+  "among the newest pages and went early, and late-alphabet names bought no measurable time. What best predicted his "
+  "next deletion was plain edit timing. Swarms can learn a visible oversight rule quickly; overseers can stay ahead by "
+  "not having only one.")
 
 H2("Code and Data")
-P("Code repository: [link to be added on release]. One command reproduces every number and figure from the "
-  "public export (scripts/fetch_data.sh, then uv run python -m breadcrumbs.run). Data: collusion.wiki export, "
-  "https://collusion.wiki/explorer/download (not redistributed). Info hazards: the report quotes only text about "
-  "the deletion sweep, never the exploit or task content the agents posted.")
+P(f"Code repository: {SUB['code_link']}. One command reproduces every number and figure from the public export "
+  "(scripts/fetch_data.sh, then uv run python -m breadcrumbs.run, robustness, confounds and figures). Data: collusion.wiki "
+  "export, https://collusion.wiki/explorer/download (not redistributed). The report quotes only text about the deletion "
+  "sweep, never exploit or task content from the agent posts.")
 
 H2("References")
 REFS = [
-    "Geiger, R. S., and Ribes, D. (2010). The work of sustaining order in Wikipedia: the banning of a vandal. "
-    "Proceedings of CSCW 2010. https://doi.org/10.1145/1718918.1718941",
-    "Greenblatt, R., Shlegeris, B., Sachan, K., and Roger, F. (2023). AI Control: Improving Safety Despite "
-    "Intentional Subversion. arXiv:2312.06942.",
+    "Cao, Q., Sirivianos, M., Yang, X., and Pregueiro, T. (2012). Aiding the Detection of Fake Accounts in Large Scale "
+    "Social Online Services. USENIX NSDI 2012.",
+    "Forman et al. (2026). Revealing the details of how OpenAI agents hacked Hugging Face. Swarm Traces. https://swarmtraces.org/",
+    "Greenblatt, R., Shlegeris, B., Sachan, K., and Roger, F. (2023). AI Control: Improving Safety Despite Intentional "
+    "Subversion. arXiv:2312.06942.",
+    "Gyöngyi, Z., Garcia-Molina, H., and Pedersen, J. (2004). Combating Web Spam with TrustRank. VLDB 2004.",
     "Hammond, L., et al. (2025). Multi-Agent Risks from Advanced AI. arXiv:2502.14143.",
-    "Lee, D., and Tiwari, M. (2024). Prompt Infection: LLM-to-LLM Prompt Injection within Multi-Agent Systems. "
-    "arXiv:2410.07283.",
     "METR (2026). Hugging Face incident report. https://metr.org/hugging-face-incident-report-aug-2026.pdf",
-    "Motwani, S. R., et al. (2024). Secret Collusion among AI Agents: Multi-Agent Deception via Steganography. "
-    "NeurIPS 2024.",
-    "LLM Agents Can Easily Tamper With Their Own Traces (2026). arXiv:2609.30266.",
-    "Swarm Traces (2026). Reconstructed attack payloads. https://swarmtraces.org/",
+    "Motwani, S. R., et al. (2024). Secret Collusion among AI Agents: Multi-Agent Deception via Steganography. NeurIPS 2024.",
+    "Pacheco, D., Hui, P.-M., Torres-Lugo, C., Truong, B. T., Flammini, A., and Menczer, F. (2021). Uncovering "
+    "Coordinated Networks on Social Media: Methods and Case Studies. ICWSM 2021.",
+    "Qin, Schmotz, et al. (2026). LLM Agents Can Easily Tamper With Their Own Traces. arXiv:2609.30266.",
+    "UseModWiki. Text formatting rules and automatic WikiWord links. http://www.usemod.com/cgi-bin/wiki.pl",
     "Von Arx, S., Byrd, C. S., Kitts, S., and Larsen, T. (2026). Discovery of a new OpenAI agent message board. "
     "Nightingale Collective and Trajectory Institute. https://collusion.wiki/",
+    "West, A. G., Kannan, S., and Lee, I. (2010). Detecting Wikipedia Vandalism via Spatio-Temporal Analysis of Revision "
+    "Metadata. EUROSEC 2010.",
 ]
 SECTIONS.append(("refs", REFS))
 
 H2("Appendix A. Limitations and Dual-Use / Ethical Considerations")
-P("Dual use. The breadcrumb result tells a swarm what to avoid: fewer readable links between its pages. We think "
-  "the marginal risk is low, since avoiding plain links is an obvious move that any capable swarm can find, and "
-  "the finding is far more useful to defenders, who can apply it today with no special tools. We do not publish a "
-  "detector tuned to evade, and we quote none of the exploit, credential or task content the agents posted.")
-P("Data and people. All data come from a public export whose authors redacted user names and half of each IP "
-  "address. We collected nothing new and contacted no one. The moderator appears only as the label [Admin1]; we "
-  "make no judgement of his work, which was done alone and unpaid against a much faster adversary. Statements "
-  "about who ran the agents follow the published report and press coverage; this analysis does not attribute them.")
-P("Interpretation risk. These are correlational results from one incident. They should not be read as proof of "
-  "how the moderator worked or as a general law of swarm behaviour.")
+P("Dual use. These results could help a swarm evade oversight: avoid sort-order tricks that also make pages new, and "
+  "spread edits out in time. We think the marginal risk is low. The first lesson is already in the agents' own notes, "
+  "the second is generic, and the main practical message, vary review order and watch edit timing, helps defenders "
+  "today with no special tools. We quote no exploit, credential or task content from the agent posts.")
+P("Data and people. All data come from a public export whose authors redacted user names and half of each IP address. We "
+  "collected nothing new and contacted no one. The moderator appears only as [Admin1]; we make no judgement of his work, "
+  "done alone and unpaid against a much faster adversary. Attribution of the agents follows the published report.")
+P("Interpretation risk. These are correlational results from one incident and should not be read as proof of how the "
+  "moderator worked or as general laws of swarm behaviour.")
 H2("Appendix B. Sensitivity and deviations")
-rows = [["Session gap", "Active: sessions, deletions", "Active: A-Z share", "After: A-Z share"]]
+rows = [["Session gap", "Active: sessions, deletions", "Active: A to Z share", "After: A to Z share"]]
 for g in ("10", "30", "60"):
     v = R["q1_order"][g]
     rows.append([f"{g} min", f"{v['active']['sessions']}, {v['active']['deletions']}",
                  pct(v["active"]["pooled_ascending_share"]), pct(v["after"]["pooled_ascending_share"])])
-TABLE(rows, "Table B1. Q1 deletion order under different session gaps (sessions of 20 or more deletions).")
-P("Deviations from the plan: none in the planned tests. Added after the planned run (post hoc): Q3 with controls "
-  "created within one hour of the linked page, Q3 restricted to the active period, the reverse-order placebo, and "
-  "the pair-order test. The first-notice time in the plan (14:04) comes from the agent's own text; the saved "
-  "revision is timestamped 14:05:02 UTC.")
+TABLE(rows, "Table B1. Deletion order under different session gaps (sessions of 20 or more deletions).")
+c3 = {(r["linked"], r["target_older"]): r for r in CF["direction_cells"]}
+P(f"Planned link test, pooled across events: {main['linked_deleted_in_window']} of {main['linked_targets']} linked pages "
+  f"({pct(main['rate_linked'])}) against {pct(main['rate_control'])} of controls ({main['risk_ratio']}x, permutation "
+  f"{p(main['p_one_sided'])}), with similar results at 10 and 60 minutes and without alphabetical neighbours. Pooling "
+  "inflates this ratio because events differ in base rate, so the main text reports the within-event estimate. A "
+  "reverse-time placebo also showed an excess (3.0x pooled), and in pairs deleted close together the order followed "
+  f"edit recency more than link direction (linked target edited after the linking page: deleted second in "
+  f"{c3[(True, False)]['after']} of {c3[(True, False)]['after'] + c3[(True, False)]['before']}; edited before: "
+  f"{c3[(True, True)]['after']} of {c3[(True, True)]['after'] + c3[(True, True)]['before']}).")
+P("Deviations from the plan: none in the planned tests. Added after the planned run: newest-edited-first order, "
+  "within-event and adjusted link estimates with session bootstrap, the edit-timing predictor, the reverse-time placebo, "
+  "the ZZ adoption test, re-creation counts and the deletion accounting.")
 
 
 def set_cell_text(cell_par, text, bold=None, italic=False, size=None):

@@ -1,0 +1,422 @@
+{
+  "events": 560,
+  "linked_rows": 968,
+  "linked_hits": 239,
+  "control_rows": 86854,
+  "control_hits": 4029,
+  "distinct_linked_pages": 494,
+  "mh": {
+    "event": {
+      "rr": 3.0,
+      "lo": 2.21,
+      "hi": 4.39
+    },
+    "event+label": {
+      "rr": 1.82,
+      "lo": 1.41,
+      "hi": 2.5
+    },
+    "event+lastsave": {
+      "rr": 1.62,
+      "lo": 1.32,
+      "hi": 1.95
+    },
+    "event+label+lastsave": {
+      "rr": 1.31,
+      "lo": 1.04,
+      "hi": 1.54
+    },
+    "event+label+lastsave+prefix+family": {
+      "rr": 1.11,
+      "lo": 0.87,
+      "hi": 1.31
+    }
+  },
+  "direction_cells": [
+    {
+      "linked": true,
+      "target_older": true,
+      "after": 86,
+      "before": 107
+    },
+    {
+      "linked": true,
+      "target_older": false,
+      "after": 150,
+      "before": 71
+    },
+    {
+      "linked": false,
+      "target_older": true,
+      "after": 54966,
+      "before": 63471
+    },
+    {
+      "linked": false,
+      "target_older": false,
+      "after": 64293,
+      "before": 55846
+    }
+  ],
+  "recency_sessions": [
+    {
+      "start": "2026-06-18T18:21:02+00:00",
+      "n": 25,
+      "newest_first_share": 0.09
+    },
+    {
+      "start": "2026-06-19T13:30:00+00:00",
+      "n": 83,
+      "newest_first_share": 0.35
+    },
+    {
+      "start": "2026-06-19T15:44:00+00:00",
+      "n": 79,
+      "newest_first_share": 0.51
+    },
+    {
+      "start": "2026-06-19T22:56:50+00:00",
+      "n": 230,
+      "newest_first_share": 0.47
+    },
+    {
+      "start": "2026-06-23T11:38:48+00:00",
+      "n": 68,
+      "newest_first_share": 0.52
+    },
+    {
+      "start": "2026-06-23T16:05:08+00:00",
+      "n": 27,
+      "newest_first_share": 0.5
+    },
+    {
+      "start": "2026-06-23T16:57:46+00:00",
+      "n": 52,
+      "newest_first_share": 0.45
+    },
+    {
+      "start": "2026-06-23T18:01:17+00:00",
+      "n": 56,
+      "newest_first_share": 0.45
+    },
+    {
+      "start": "2026-06-23T19:15:10+00:00",
+      "n": 270,
+      "newest_first_share": 0.22
+    },
+    {
+      "start": "2026-06-23T22:43:32+00:00",
+      "n": 129,
+      "newest_first_share": 0.34
+    },
+    {
+      "start": "2026-06-24T10:42:29+00:00",
+      "n": 118,
+      "newest_first_share": 0.17
+    },
+    {
+      "start": "2026-06-24T12:19:27+00:00",
+      "n": 32,
+      "newest_first_share": 0.71
+    },
+    {
+      "start": "2026-06-24T17:58:45+00:00",
+      "n": 32,
+      "newest_first_share": 0.16
+    },
+    {
+      "start": "2026-06-24T19:17:09+00:00",
+      "n": 68,
+      "newest_first_share": 0.25
+    },
+    {
+      "start": "2026-06-25T17:51:06+00:00",
+      "n": 40,
+      "newest_first_share": 0.12
+    },
+    {
+      "start": "2026-06-25T18:53:09+00:00",
+      "n": 139,
+      "newest_first_share": 0.4
+    },
+    {
+      "start": "2026-06-26T13:27:17+00:00",
+      "n": 85,
+      "newest_first_share": 0.47
+    },
+    {
+      "start": "2026-06-26T15:00:55+00:00",
+      "n": 30,
+      "newest_first_share": 0.48
+    },
+    {
+      "start": "2026-06-26T16:10:35+00:00",
+      "n": 155,
+      "newest_first_share": 0.8
+    },
+    {
+      "start": "2026-06-26T18:34:09+00:00",
+      "n": 61,
+      "newest_first_share": 0.9
+    },
+    {
+      "start": "2026-06-26T20:22:07+00:00",
+      "n": 30,
+      "newest_first_share": 1.0
+    },
+    {
+      "start": "2026-06-26T23:01:51+00:00",
+      "n": 21,
+      "newest_first_share": 0.93
+    },
+    {
+      "start": "2026-06-28T19:47:51+00:00",
+      "n": 65,
+      "newest_first_share": 0.82
+    },
+    {
+      "start": "2026-06-28T21:09:57+00:00",
+      "n": 62,
+      "newest_first_share": 0.65
+    },
+    {
+      "start": "2026-06-29T19:06:15+00:00",
+      "n": 84,
+      "newest_first_share": 0.41
+    },
+    {
+      "start": "2026-06-30T11:58:36+00:00",
+      "n": 35,
+      "newest_first_share": 1.0
+    },
+    {
+      "start": "2026-06-30T12:59:01+00:00",
+      "n": 45,
+      "newest_first_share": 1.0
+    },
+    {
+      "start": "2026-06-30T13:51:12+00:00",
+      "n": 71,
+      "newest_first_share": 0.97
+    },
+    {
+      "start": "2026-06-30T17:46:11+00:00",
+      "n": 26,
+      "newest_first_share": 1.0
+    },
+    {
+      "start": "2026-06-30T19:14:02+00:00",
+      "n": 245,
+      "newest_first_share": 0.93
+    },
+    {
+      "start": "2026-07-01T15:19:30+00:00",
+      "n": 91,
+      "newest_first_share": 0.88
+    },
+    {
+      "start": "2026-07-01T19:07:22+00:00",
+      "n": 119,
+      "newest_first_share": 0.85
+    },
+    {
+      "start": "2026-07-02T19:41:17+00:00",
+      "n": 22,
+      "newest_first_share": 0.7
+    },
+    {
+      "start": "2026-07-02T21:26:46+00:00",
+      "n": 54,
+      "newest_first_share": 0.64
+    },
+    {
+      "start": "2026-07-03T23:31:38+00:00",
+      "n": 49,
+      "newest_first_share": 0.61
+    },
+    {
+      "start": "2026-07-05T12:04:34+00:00",
+      "n": 57,
+      "newest_first_share": 0.76
+    },
+    {
+      "start": "2026-07-05T19:39:32+00:00",
+      "n": 169,
+      "newest_first_share": 0.93
+    },
+    {
+      "start": "2026-07-06T17:41:36+00:00",
+      "n": 74,
+      "newest_first_share": 0.91
+    },
+    {
+      "start": "2026-07-07T11:55:47+00:00",
+      "n": 50,
+      "newest_first_share": 0.93
+    },
+    {
+      "start": "2026-07-07T14:32:24+00:00",
+      "n": 108,
+      "newest_first_share": 0.86
+    },
+    {
+      "start": "2026-07-07T16:27:59+00:00",
+      "n": 30,
+      "newest_first_share": 0.86
+    },
+    {
+      "start": "2026-07-07T17:34:00+00:00",
+      "n": 31,
+      "newest_first_share": 0.62
+    },
+    {
+      "start": "2026-07-07T19:07:07+00:00",
+      "n": 293,
+      "newest_first_share": 0.47
+    },
+    {
+      "start": "2026-07-08T11:47:26+00:00",
+      "n": 111,
+      "newest_first_share": 0.42
+    },
+    {
+      "start": "2026-07-08T13:31:03+00:00",
+      "n": 58,
+      "newest_first_share": 0.31
+    },
+    {
+      "start": "2026-07-08T16:29:43+00:00",
+      "n": 42,
+      "newest_first_share": 0.76
+    },
+    {
+      "start": "2026-07-09T12:46:44+00:00",
+      "n": 25,
+      "newest_first_share": 0.83
+    },
+    {
+      "start": "2026-07-09T16:42:26+00:00",
+      "n": 129,
+      "newest_first_share": 0.82
+    },
+    {
+      "start": "2026-07-11T20:20:35+00:00",
+      "n": 86,
+      "newest_first_share": 0.9
+    },
+    {
+      "start": "2026-07-12T18:40:46+00:00",
+      "n": 122,
+      "newest_first_share": 1.0
+    },
+    {
+      "start": "2026-07-12T20:58:21+00:00",
+      "n": 110,
+      "newest_first_share": 0.44
+    },
+    {
+      "start": "2026-07-13T17:54:00+00:00",
+      "n": 71,
+      "newest_first_share": 0.52
+    },
+    {
+      "start": "2026-07-13T19:15:30+00:00",
+      "n": 441,
+      "newest_first_share": 0.52
+    },
+    {
+      "start": "2026-07-14T12:21:56+00:00",
+      "n": 117,
+      "newest_first_share": 0.49
+    },
+    {
+      "start": "2026-07-14T13:46:03+00:00",
+      "n": 32,
+      "newest_first_share": 0.39
+    }
+  ],
+  "edited_within_10min": {
+    "rr": 6.16,
+    "lo": 3.01,
+    "hi": 11.08,
+    "pred_rows": "6962",
+    "pred_hits": 1185
+  },
+  "linked_active_only_event_mh": {
+    "rr": 3.63,
+    "lo": 3.24,
+    "hi": 4.72,
+    "pred_rows": 240,
+    "pred_hits": 32
+  },
+  "zz_naming": {
+    "odds_ratio": 2.59,
+    "p_one_sided": 0.027
+  },
+  "late_alphabet_rr": {
+    "rr": 0.64,
+    "lo": 0.27,
+    "hi": 1.54
+  },
+  "recreations": {
+    "pages": 48,
+    "total": 66
+  },
+  "deletion_accounting": {
+    "deletions": 5217,
+    "distinct_pages_deleted": 5144,
+    "deletions_on_pages_never_captured": 1248,
+    "distinct_uncaptured_pages": 1246,
+    "repeat_deletions": 73
+  },
+  "jun19_1330_session_tail": [
+    [
+      "2026-06-19T14:02:26+00:00",
+      "AsciiBridgeCtx~2fcontext"
+    ],
+    [
+      "2026-06-19T14:02:36+00:00",
+      "AsciiBridgeTarget075"
+    ],
+    [
+      "2026-06-19T14:02:40+00:00",
+      "AsciiHubTest~2fMain"
+    ],
+    [
+      "2026-06-19T14:02:43+00:00",
+      "AsciiOptionHierarchy"
+    ],
+    [
+      "2026-06-19T14:02:47+00:00",
+      "AsciiOptionHierarchy~2fTest"
+    ],
+    [
+      "2026-06-19T14:03:08+00:00",
+      "AsciiTemplateZ"
+    ],
+    [
+      "2026-06-19T14:17:08+00:00",
+      "AsciiTestContent"
+    ],
+    [
+      "2026-06-19T14:17:19+00:00",
+      "Aug18SectorSequenceLive"
+    ],
+    [
+      "2026-06-19T14:18:05+00:00",
+      "AsciiPortalLinkNew70697"
+    ],
+    [
+      "2026-06-19T14:21:14+00:00",
+      "ZedNew"
+    ],
+    [
+      "2026-06-19T14:21:20+00:00",
+      "ZzzMyTempTry"
+    ],
+    [
+      "2026-06-19T14:21:31+00:00",
+      "ZzUniqueRet45"
+    ]
+  ]
+}

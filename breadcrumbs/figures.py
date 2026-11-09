@@ -366,6 +366,139 @@ def figure3(res: dict, rob: dict, c) -> None:  # noqa: F811
     save(fig, "figure3")
 
 
+# Version 3 (after the independent review): recency in Fig 1B, full June 19 timeline, forest plot -------------
+VIOLET = "#6250d6"
+
+
+def figure1(res: dict) -> None:  # noqa: F811
+    conf = json.loads((OUT / "confounds.json").read_text())
+    daily = res["q5_workload"]["daily"]
+    days = [d for d in sorted(daily) if "2026-06-14" <= d <= "2026-07-15"]
+    x = np.array([datetime.fromisoformat(d) for d in days])
+    created = np.array([daily[d]["created"] for d in days])
+    deleted = np.array([daily[d]["deleted"] for d in days])
+    fig, (a, b) = plt.subplots(2, 1, figsize=(6.9, 5.0), sharex=True, gridspec_kw={"height_ratios": [1.2, 1], "hspace": 0.34})
+    a.bar(x, created, width=0.72, color=ORANGE, linewidth=0)
+    a.bar(x, -deleted, width=0.72, color=BLUE, linewidth=0)
+    a.axhline(0, color=INK2, lw=0.6)
+    a.set_ylim(-780, 1450)
+    a.set_yticks([-500, 0, 500, 1000])
+    a.set_yticklabels(["500", "0", "500", "1,000"])
+    a.grid(axis="y", color=FAINT, lw=0.6)
+    a.set_axisbelow(True)
+    a.set_title("A   Pages created by agents (up) and deleted by the moderator (down), per day", pad=12)
+    i18 = days.index("2026-06-18")
+    a.text(x[0] - timedelta(hours=10), 1240, f"Jun 18: {created[i18]:,} created,\n{deleted[i18]} deleted", fontsize=7.5, color=INK2, va="bottom")
+    a.text(datetime(2026, 7, 1), 820, "agents stop creating pages after Jun 22;\nthe cleanup runs three more weeks", fontsize=7.5, color=INK2, va="top")
+    notice = datetime(2026, 6, 19, 14, 5)
+    a.axvline(notice, ymax=0.8, color=INK, lw=0.7, ls=(0, (2, 2)))
+    b.axvline(notice, color=INK, lw=0.7, ls=(0, (2, 2)))
+    a.text(notice + timedelta(hours=6), 1000, "Jun 19, 14:05 UTC: an agent posts\nthat the sweep \"appears active\nalphabetically\"", fontsize=7.5, color=INK, va="top")
+    s = res["q1_order"]["30"]["sessions"]
+    xs = np.array([datetime.fromisoformat(r["start"]).replace(tzinfo=None) for r in s])
+    ys = np.array([r["ascending_share"] for r in s])
+    rec = conf["recency_sessions"]
+    xr = np.array([datetime.fromisoformat(r["start"]).replace(tzinfo=None) for r in rec])
+    yr = np.array([r["newest_first_share"] for r in rec])
+    nr = np.array([r["n"] for r in rec])
+    ns = np.array([r["n"] for r in s])
+    b.axhline(0.5, color=MUTED, lw=0.8, ls=(0, (1, 2)))
+    b.scatter(xs, ys, s=6 + ns / 6, color=BLUE, alpha=0.75, linewidth=0, label="A-Z title order")
+    b.scatter(xr, yr, s=6 + nr / 6, color=VIOLET, alpha=0.75, linewidth=0, marker="D", label="newest-edited page first")
+    b.text(datetime(2026, 7, 15, 20), 0.5, "chance", fontsize=7, color=MUTED, va="center", ha="left")
+    b.set_ylim(0, 1.05)
+    b.set_yticks([0, 0.25, 0.5, 0.75, 1])
+    b.set_yticklabels(["0%", "25%", "50%", "75%", "100%"])
+    b.grid(axis="y", color=FAINT, lw=0.6)
+    b.set_axisbelow(True)
+    b.set_title("B   Order of deletions within each session", pad=10)
+    b.legend(loc="lower right", fontsize=7.4, handletextpad=0.2, markerscale=0.8, ncol=2, bbox_to_anchor=(1.0, 1.0), borderaxespad=0.2)
+    b.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
+    b.xaxis.set_major_formatter(mdates.DateFormatter("%b %-d"))
+    b.set_xlim(datetime(2026, 6, 14, 12), datetime(2026, 7, 16, 12))
+    save(fig, "figure1")
+
+
+def figure2(c) -> None:  # noqa: F811
+    t0, t1 = datetime(2026, 6, 19, 13, 25, tzinfo=UTC), datetime(2026, 6, 19, 16, 8, tzinfo=UTC)
+    dels = [(t, k) for t, k in c.deletions if t0 <= t <= t1]
+    by_title = {p.title: p for p in c.pages.values()}
+    notice = by_title["DataUSAConstructionWageSep18Live"]
+    zzz = [by_title["ZZZDataUSAConstructionWageLive"], by_title["ZZZTestMay10Agent2027"]]
+    fig, ax = plt.subplots(figsize=(6.9, 2.75))
+    ax.set_xlim(t0, t1)
+    ax.set_ylim(-1.9, 2.5)
+    ax.axis("off")
+    ys, ym = 1.15, -0.65
+    for label, y, colr in (("swarm", ys, ORANGE), ("moderator", ym, BLUE)):
+        ax.plot([t0, t1], [y, y], color=RULE, lw=1, zorder=0)
+        ax.text(t0 - timedelta(minutes=1.2), y, label, ha="right", va="center", fontsize=8, color=colr, fontweight="bold")
+    special = {notice.key, zzz[0].key, zzz[1].key}
+    for t, k in dels:
+        title = c.pages[k].title if k in c.pages else k.split("~", 1)[1]
+        hit = k in special
+        z = title.lower().startswith("z") and not hit
+        ax.plot([t, t], [ym - 0.2, ym + 0.2], color=BLUE if hit else (INK2 if z else "#a9c8ee"),
+                lw=1.8 if hit else (1.3 if z else 0.7), zorder=2)
+    note_t = [bt for bt, _, bd in notice.bodies if "alphabetically" in bd][0]
+    for pg in [notice] + zzz:
+        t_from = note_t if pg is notice else pg.created
+        ax.annotate("", xy=(pg.deleted, ym + 0.24), xytext=(t_from, ys - 0.12),
+                    arrowprops=dict(arrowstyle="-|>", color=ORANGE, lw=0.7, alpha=0.55, mutation_scale=7,
+                                    connectionstyle="arc3,rad=0.12", shrinkA=3, shrinkB=1))
+    ax.scatter([note_t], [ys], s=48, color=ORANGE, zorder=3, edgecolor="white", linewidth=0.8)
+    for z in zzz:
+        ax.scatter([z.created], [ys], s=34, marker="s", color="white", edgecolor=ORANGE, linewidth=1.3, zorder=3)
+    ax.text(datetime(2026, 6, 19, 13, 27, tzinfo=UTC), 2.45,
+            "14:05  notice: \"sweep appears active alphabetically ...\nif this page vanishes, try [[ZZZ...]]\"; 14:06 and\n14:11  two ZZZ backups (squares), named to sort last",
+            fontsize=7.2, color=INK, va="top")
+    ax.text(datetime(2026, 6, 19, 13, 27, tzinfo=UTC), -1.32, "13:30 to 14:18  an A-Z sweep\n(titles starting \"Ascii...\")",
+            fontsize=7.2, color=INK2, va="center")
+    ax.text(datetime(2026, 6, 19, 14, 31, tzinfo=UTC), -1.32, "14:21  he jumps to three older Z pages\n(dark tick) and leaves the backups",
+            fontsize=7.2, color=INK2, va="center")
+    ax.text(datetime(2026, 6, 19, 16, 7, tzinfo=UTC), 2.45,
+            "15:44  next session opens with the most\nrecently edited pages; the notice and\nboth backups go 7th to 9th, 15:46",
+            fontsize=7.2, color=INK, va="top", ha="right")
+    for hh, mm in ((13, 30), (14, 0), (14, 30), (15, 0), (15, 30), (16, 0)):
+        ax.text(datetime(2026, 6, 19, hh, mm, tzinfo=UTC), -1.9, f"{hh}:{mm:02d}", ha="center", fontsize=7, color=MUTED)
+    save(fig, "figure2")
+
+
+def figure3(res: dict, rob: dict, c) -> None:  # noqa: F811
+    conf = json.loads((OUT / "confounds.json").read_text())
+    mh = conf["mh"]
+    rows = [
+        ("Linked page, same deletion event", mh["event"], ORANGE, True),
+        ("  + same agent label", mh["event+label"], ORANGE, False),
+        ("  + similar last-edit time", mh["event+label+lastsave"], ORANGE, False),
+        ("  + title prefix and page family", mh["event+label+lastsave+prefix+family"], ORANGE, False),
+        ("Edited within 10 min of the deleted page", conf["edited_within_10min"], VIOLET, True),
+    ]
+    fig, ax = plt.subplots(figsize=(6.9, 2.5))
+    y = np.arange(len(rows))[::-1].astype(float)
+    y[-1] -= 0.0
+    for yi, (label, r, col, strong) in zip(y, rows):
+        ax.plot([r["lo"], r["hi"]], [yi, yi], color=col, lw=1.6, alpha=0.45, solid_capstyle="round")
+        ax.scatter([r["rr"]], [yi], s=46 if strong else 34, color=col, zorder=3, linewidth=0)
+        ax.text(-0.02, yi, label, ha="right", va="center", fontsize=7.8, color=INK if strong else INK2,
+                fontweight="bold" if strong else "normal", transform=ax.get_yaxis_transform())
+        ax.text(1.02, yi, f"{r['rr']:.1f}x  ({r['lo']:.1f} to {r['hi']:.1f})", ha="left", va="center", fontsize=7.6, color=INK, transform=ax.get_yaxis_transform())
+    ax.axvline(1, color=INK2, lw=0.8)
+    ax.text(1, len(rows) - 0.35, "no effect", fontsize=6.8, color=MUTED, ha="center", va="bottom")
+    ax.set_xscale("log")
+    ax.set_xlim(0.7, 15)
+    ax.set_xticks([1, 2, 4, 8])
+    ax.set_xticklabels(["1x", "2x", "4x", "8x"])
+    ax.set_yticks([])
+    ax.spines["left"].set_visible(False)
+    ax.grid(axis="x", color=FAINT, lw=0.6)
+    ax.set_axisbelow(True)
+    ax.set_ylim(-0.6, len(rows) - 0.3)
+    ax.set_xlabel("how much more likely to be deleted in the next 30 minutes (within-event risk ratio, log scale)", fontsize=7.4)
+    fig.subplots_adjust(left=0.42, right=0.8)
+    save(fig, "figure3")
+
+
 def main() -> None:
     style()
     res = json.loads((OUT / "results.json").read_text())
