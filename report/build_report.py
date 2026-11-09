@@ -153,7 +153,7 @@ P(f"Data. We use the collusion.wiki export published on September 4, 2026, verif
   "gaps of at most 30 minutes (sensitivity: 10 and 60). The active period runs to June 22, 23:59 UTC, the last day agents "
   "created pages.")
 P("Plan and provenance. All code was written during the sprint. An analysis plan (ANALYSIS_PLAN.md) was committed to git "
-  "at 23:06 EST on November 8, before the confirmatory runs; three short exploratory checks run before it are kept in "
+  "at 23:06 EST on November 8, before the confirmatory runs; the five short exploratory scripts run before it are kept in "
   "scripts/exploratory/ and listed in the plan. After the planned run a separate adversarial review re-ran the data "
   "and proposed confound checks, which we adopted and mark as post hoc.")
 P("Deletion order. For each session of 20 or more deletions we count the share of consecutive pairs in A to Z title order "
@@ -260,7 +260,7 @@ P("This is one incident, one wiki and one moderator, and none of these numbers g
   "interval is wide. Link extraction counts bare CamelCase words, which can include pages mentioned rather than linked. "
   "The export was assembled by its authors, with redactions and reconstructed pages, and pages deleted before capture "
   "lack text. The newest-first measure, the timing predictor and all adjusted link estimates are post hoc, added after "
-  "an adversarial review of the first draft, and the three exploratory checks ran before the plan.")
+  "an adversarial review of the first draft, and the five exploratory scripts ran before the plan.")
 H3("Future Work")
 P("Replicate the timing-versus-content comparison on other swarm logs (Swarm Traces, AI Village transcripts). Build a "
   "sandbox in which agents face a moderator with a fixed, mixed or random order and measure how fast they learn it and "

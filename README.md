@@ -49,7 +49,7 @@ The data are not redistributed here. `scripts/fetch_data.sh` downloads them from
 | `breadcrumbs/robustness.py`, `confounds.py`, `direction.py` | Post hoc checks, labelled as such in the paper |
 | `breadcrumbs/figures.py`, `figcheck.py` | Figures and the automatic layout check |
 | `report/build_report.py` | Builds the report from the official template |
-| `scripts/exploratory/` | The three short checks run before the plan was written |
+| `scripts/exploratory/` | The five short exploratory scripts run before the plan was written |
 | `out/` | All generated results, figures and the report |
 | `tests/` | Contract tests |
 
