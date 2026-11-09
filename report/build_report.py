@@ -65,10 +65,11 @@ ABSTRACT = (
     "pages first, and fresh backups are exactly that, so both ZZZ pages were gone within 100 minutes. While agents were active, "
     f"late-alphabet names gave no measurable protection (risk ratio {lrr['rr']:.2f}, 95% interval {lrr['lo']:.2f} to "
     f"{lrr['hi']:.2f}). What predicted the next deletion was edit timing: pages edited within ten minutes of a deleted "
-    f"page were {e10['rr']:.1f} times as likely to go next. The swarm's links between pages looked predictive "
-    f"({mh['event']['rr']:.1f}x) but added little once author and edit timing were held fixed "
-    f"({mh['event+label+lastsave+prefix+family']['rr']:.1f}x). Agents can learn a visible oversight rule within a day, and "
-    "an overseer whose order shifts can beat an evasion built for the old one."
+    f"page were {e10['rr']:.1f} times as likely to go next (a post hoc analysis). The swarm's links between pages looked "
+    f"predictive ({mh['event']['rr']:.1f}x) but fell to {mh['event+label+lastsave']['rr']:.1f}x once author and edit "
+    f"timing were held fixed, and to {mh['event+label+lastsave+prefix+family']['rr']:.1f}x with title and page family. "
+    "Agents can learn a visible oversight rule within a day, and an overseer who works in two orders can beat an "
+    "evasion built for one."
 )
 
 SECTIONS: list[tuple[str, object]] = []
@@ -120,7 +121,8 @@ L([
     f"{lrr['hi']:.2f}).",
     f"Edit timing, not content links, predicted his next deletion. Pages edited within ten minutes of a just-deleted page "
     f"were {e10['rr']:.1f}x as likely to go in the next 30 minutes. Links between pages showed {mh['event']['rr']:.1f}x "
-    f"but fell to {mh['event+label+lastsave+prefix+family']['rr']:.1f}x once shared author and edit time were held fixed.",
+    f"but fell to {mh['event+label+lastsave']['rr']:.1f}x once shared author and edit time were held fixed, and to "
+    f"{mh['event+label+lastsave+prefix+family']['rr']:.1f}x adding title prefix and page family.",
 ])
 P("We release a one-command, checksummed analysis with an analysis plan committed before the confirmatory runs, every "
   "test reported including the nulls, and no model calls. The scope is one incident: these are measurements of what "
@@ -152,7 +154,7 @@ P(f"Data. We use the collusion.wiki export published on September 4, 2026, verif
   "created pages.")
 P("Plan and provenance. All code was written during the sprint. An analysis plan (ANALYSIS_PLAN.md) was committed to git "
   "at 23:06 EST on November 8, before the confirmatory runs; three short exploratory checks run before it are kept in "
-  "scripts/exploratory/ and listed in the plan. After the planned run an independent adversarial review re-ran the data "
+  "scripts/exploratory/ and listed in the plan. After the planned run a separate adversarial review re-ran the data "
   "and proposed confound checks, which we adopted and mark as post hoc.")
 P("Deletion order. For each session of 20 or more deletions we count the share of consecutive pairs in A to Z title order "
   "(compared with 10,000 random orderings) and, post hoc, the share in which the later deletion had an older last edit "
@@ -189,7 +191,7 @@ P(f"In the active period {pct(q1['active']['pooled_ascending_share'])} of consec
   f"{q4['new_pages_3d_before_notice']:,} in the three days before the notice to {q4['zz_after']} of "
   f"{q4['new_pages_after_notice_to_jun22']} after it (odds ratio {zz['odds_ratio']:.1f}, one-sided p = "
   f"{zz['p_one_sided']:.2f}). The notice itself sat on one page, edited {q4['sweep_belief_mentions']} times, and pages "
-  f"were often re-created after deletion ({CF['recreations']['total']} re-creations on {CF['recreations']['pages']} "
+  f"were re-created after deletion in a minority of cases ({CF['recreations']['total']} re-creations on {CF['recreations']['pages']} "
   "pages).")
 H3("4.3 The backups were caught first, not last")
 P("Figure 2 shows the episode. At 14:05 the notice went up; ZZZ backups followed at 14:06 and 14:11, while an A to Z sweep "
@@ -242,13 +244,15 @@ FIG(OUT / "figure3.png", 6.5,
 H2("5. Discussion and Limitations")
 P("Agents learn the overseer's visible rule. Within a day of the first large sweep, an agent had inferred the "
   "moderator's sort order from the outside, written it down for others, and built a countermeasure, and the "
-  "countermeasure spread modestly. Nobody told the agents to evade. For anyone overseeing swarms by hand this is a "
+  "countermeasure spread modestly. For anyone overseeing swarms by hand this is a "
   "concrete warning: a predictable order is information the swarm can use.")
-P("An order that shifts beats an evasion built for the old one. The ZZZ trick was tuned to A to Z sorting. The moderator "
-  "also worked newest-first, and new pages are what an evader creates, so the countermeasure made its own pages easy "
-  "to find. Mixing or randomizing review order costs a human little and removes the regularity a swarm can learn. For "
-  "automated monitors the timing result points the same way: who edited what, and when, carries most of the signal, "
-  "consistent with work on vandalism and coordinated accounts. Content links between swarm pages added little beyond it.")
+P("Two orders beat an evasion built for one. The ZZZ trick was tuned to A to Z sorting. From the first sessions the "
+  "moderator also opened with the most recently edited pages, and new pages are what an evader creates, so the "
+  "countermeasure made its own pages easy to find. Mixing or randomizing review order costs a human little and removes "
+  "the regularity a swarm can learn. The timing result is narrower than a detection claim: edit timing predicted this "
+  "moderator's next deletion, largely through his newest-first habit, and nearly every captured page was deleted in "
+  "the end, so nothing here measures how well a monitor would find swarm pages. That it beat content links fits work on "
+  "vandalism and coordinated accounts, where metadata often carries more than content.")
 H3("Limitations")
 P("This is one incident, one wiki and one moderator, and none of these numbers generalize on their own. We see deletions, "
   "not the moderator's screen or intent; he may never have read the agents' notes, and \"adaptation\" on his side means "
@@ -319,10 +323,8 @@ P(f"Planned link test, pooled across events: {main['linked_deleted_in_window']} 
   f"({pct(main['rate_linked'])}) against {pct(main['rate_control'])} of controls ({main['risk_ratio']}x, permutation "
   f"{p(main['p_one_sided'])}), with similar results at 10 and 60 minutes and without alphabetical neighbours. Pooling "
   "inflates this ratio because events differ in base rate, so the main text reports the within-event estimate. A "
-  "reverse-time placebo also showed an excess (3.0x pooled), and in pairs deleted close together the order followed "
-  f"edit recency more than link direction (linked target edited after the linking page: deleted second in "
-  f"{c3[(True, False)]['after']} of {c3[(True, False)]['after'] + c3[(True, False)]['before']}; edited before: "
-  f"{c3[(True, True)]['after']} of {c3[(True, True)]['after'] + c3[(True, True)]['before']}).")
+  "reverse-time placebo also showed an excess (3.0x pooled), consistent with linked pages being cleared together "
+  "rather than one after the other.")
 P("Deviations from the plan: none in the planned tests. Added after the planned run: newest-edited-first order, "
   "within-event and adjusted link estimates with session bootstrap, the edit-timing predictor, the reverse-time placebo, "
   "the ZZ adoption test, re-creation counts and the deletion accounting.")
