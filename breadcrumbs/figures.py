@@ -394,7 +394,7 @@ def figure1(res: dict) -> None:  # noqa: F811
     notice = datetime(2026, 6, 19, 14, 5)
     a.axvline(notice, ymax=0.8, color=INK, lw=0.7, ls=(0, (2, 2)))
     b.axvline(notice, color=INK, lw=0.7, ls=(0, (2, 2)))
-    a.text(notice + timedelta(hours=6), 1000, "Jun 19, 14:05 UTC: an agent posts\nthat the sweep \"appears active\nalphabetically\"", fontsize=7.5, color=INK, va="top")
+    b.text(notice + timedelta(hours=5), 0.04, "agent notice,\nJun 19 14:05", fontsize=7.2, color=INK, va="bottom", ha="left")
     s = res["q1_order"]["30"]["sessions"]
     xs = np.array([datetime.fromisoformat(r["start"]).replace(tzinfo=None) for r in s])
     ys = np.array([r["ascending_share"] for r in s])
@@ -406,7 +406,7 @@ def figure1(res: dict) -> None:  # noqa: F811
     b.axhline(0.5, color=MUTED, lw=0.8, ls=(0, (1, 2)))
     b.scatter(xs, ys, s=6 + ns / 6, color=BLUE, alpha=0.75, linewidth=0, label="A-Z title order")
     b.scatter(xr, yr, s=6 + nr / 6, color=VIOLET, alpha=0.75, linewidth=0, marker="D", label="newest-edited page first")
-    b.text(datetime(2026, 7, 15, 20), 0.5, "chance", fontsize=7, color=MUTED, va="center", ha="left")
+    b.text(datetime(2026, 6, 14, 18), 0.52, "chance", fontsize=7, color=MUTED, va="bottom", ha="left")
     b.set_ylim(0, 1.05)
     b.set_yticks([0, 0.25, 0.5, 0.75, 1])
     b.set_yticklabels(["0%", "25%", "50%", "75%", "100%"])
@@ -447,11 +447,11 @@ def figure2(c) -> None:  # noqa: F811
         ax.annotate("", xy=(pg.deleted, ym + 0.24), xytext=(t_from, ys - 0.12),
                     arrowprops=dict(arrowstyle="-|>", color=ORANGE, lw=0.7, alpha=0.55, mutation_scale=7,
                                     connectionstyle="arc3,rad=0.12", shrinkA=3, shrinkB=1))
-    ax.scatter([note_t], [ys], s=48, color=ORANGE, zorder=3, edgecolor="white", linewidth=0.8)
+    ax.scatter([note_t], [ys], s=48, color=ORANGE, zorder=5, edgecolor="white", linewidth=0.8)
     for z in zzz:
         ax.scatter([z.created], [ys], s=34, marker="s", color="white", edgecolor=ORANGE, linewidth=1.3, zorder=3)
     ax.text(datetime(2026, 6, 19, 13, 27, tzinfo=UTC), 2.45,
-            "14:05  notice: \"sweep appears active alphabetically ...\nif this page vanishes, try [[ZZZ...]]\"; 14:06 and\n14:11  two ZZZ backups (squares), named to sort last",
+            "14:05  notice (dot): \"sweep appears active alphabetically ...\n           if this page vanishes, try [[ZZZ...]]\"\n14:06, 14:11  two ZZZ backups (squares), named to sort last",
             fontsize=7.2, color=INK, va="top")
     ax.text(datetime(2026, 6, 19, 13, 27, tzinfo=UTC), -1.32, "13:30 to 14:18  an A-Z sweep\n(titles starting \"Ascii...\")",
             fontsize=7.2, color=INK2, va="center")
@@ -487,7 +487,8 @@ def figure3(res: dict, rob: dict, c) -> None:  # noqa: F811
     ax.axvline(1, color=INK2, lw=0.8)
     ax.text(1, len(rows) - 0.35, "no effect", fontsize=6.8, color=MUTED, ha="center", va="bottom")
     ax.set_xscale("log")
-    ax.set_xlim(0.7, 15)
+    ax.set_xlim(0.7, 12)
+    ax.minorticks_off()
     ax.set_xticks([1, 2, 4, 8])
     ax.set_xticklabels(["1x", "2x", "4x", "8x"])
     ax.set_yticks([])
