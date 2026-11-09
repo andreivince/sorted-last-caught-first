@@ -417,6 +417,7 @@ def figure1(res: dict) -> None:  # noqa: F811
     b.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
     b.xaxis.set_major_formatter(mdates.DateFormatter("%b %-d"))
     b.set_xlim(datetime(2026, 6, 14, 12), datetime(2026, 7, 16, 12))
+    b.tick_params(axis="x", pad=7)
     save(fig, "figure1")
 
 
@@ -497,7 +498,7 @@ def figure3(res: dict, rob: dict, c) -> None:  # noqa: F811
     ax.set_axisbelow(True)
     ax.set_ylim(-0.6, len(rows) - 0.3)
     ax.set_xlabel("how much more likely to be deleted in the next 30 minutes (within-event risk ratio, log scale)", fontsize=7.4)
-    fig.subplots_adjust(left=0.42, right=0.8)
+    fig.subplots_adjust(left=0.42, right=0.8, bottom=0.24)
     save(fig, "figure3")
 
 
